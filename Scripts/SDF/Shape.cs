@@ -15,9 +15,10 @@ public class Shape : MonoBehaviour
     public float blendStrength;
     [HideInInspector]
     public int numChildren;
-    // ...
-    public Vector3 rota = Vector3.one;
-    // ...
+
+    //
+    //
+
     public Vector3 Position {
         get {
             return transform.position;
@@ -33,4 +34,5 @@ public class Shape : MonoBehaviour
             return Vector3.Scale(transform.localScale, parentScale);
         }
     }
+    public Vector3 rotation;
 }
