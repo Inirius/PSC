@@ -68,7 +68,12 @@ public class MovementOfCamera : MonoBehaviour
         if(Input.GetKey("left")){
             transform.position = transform.position + new Vector3(-Mathf.Cos(r2),0,Mathf.Sin(r2))*velocityOfCamera*Time.deltaTime;
         }
-
+        if(Input.GetKey(KeyCode.Space)){
+             transform.position = transform.position + new Vector3(0,1,0)*velocityOfCamera*Time.deltaTime;
+        }
+        if(Input.GetKey(KeyCode.LeftShift)){
+            transform.position = transform.position - new Vector3(0,1,0)*velocityOfCamera*Time.deltaTime;
+        }
         if(Input.GetKey("n")){
             var gameObject = new GameObject("Bouboule"+count);
             count++;

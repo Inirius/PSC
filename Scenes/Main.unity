@@ -335,7 +335,7 @@ MonoBehaviour:
   colour: {r: 0.3207547, g: 0.28292987, b: 0.28292987, a: 1}
   blendStrength: 0
   numChildren: 1
-  rotation: {x: 0, y: 0, z: 0}
+  rotation: {x: 0, y: 0, z: 2.4}
 --- !u!4 &612506731
 Transform:
   m_ObjectHideFlags: 0
@@ -801,7 +801,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shapeType: 0
-  operation: 3
+  operation: 2
   colour: {r: 0.3207547, g: 0.28292987, b: 0.28292987, a: 1}
   blendStrength: 0
   numChildren: 0

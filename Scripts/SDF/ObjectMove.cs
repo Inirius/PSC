@@ -29,5 +29,9 @@ public class ObjectMove : MonoBehaviour
         if(Input.GetKey("d")){
             transform.position = transform.position - new Vector3(0,0,1)*2*Time.deltaTime;
         }
+
+        if(Input.GetKey("r")){
+            transform.eulerAngles += new Vector3(0,0,1) * 2 * Time.deltaTime;
+        }
     }
 }

@@ -41,8 +41,11 @@ float SphereDistance(float3 eye, float3 centre, float radius) {
 
  ///........................
 float CubeDistance(float3 eye, float3 centre, float3 size, float3 rot) {
-    float3 neye = float3(eye.x*(1-rot.z*rot.z)+eye.y*rot.z, -eye.x*rot.z+eye.y*(1-rot.z*rot.z),eye.z);
-    float3 o = abs(neye-centre) -size;
+    float3 coor = eye - centre;
+    coor = float3(coor.x*(cos(rot.y)*cos(rot.z)-sin(rot.y)*cos(rot.x)*sin(rot.z))-coor.y*(cos(rot.y)*sin(rot.z)+sin(rot.y)*cos(rot.z)*cos(rot.x))+coor.z*sin(rot.y)*sin(rot.x),
+    coor.x*(sin(rot.y)*cos(rot.z)+cos(rot.y)*cos(rot.x)*sin(rot.z))+coor.y*(-sin(rot.y)*sin(rot.z)+cos(rot.y)*cos(rot.z)*cos(rot.x))-coor.z*cos(rot.y)*sin(rot.x),
+    coor.x*sin(rot.x)*sin(rot.z)+coor.y*sin(rot.x)*cos(rot.z)+coor.z*cos(rot.x));
+    float3 o = abs(coor) -size;
     //float3 o = abs(eye-centre) -size;
     float ud = length(max(o,0));
     float n = max(max(min(o.x,0),min(o.y,0)), min(o.z,0));
@@ -50,9 +53,9 @@ float CubeDistance(float3 eye, float3 centre, float3 size, float3 rot) {
 }
 
 // Following distance functions from http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-float TorusDistance(float3 eye, float3 centre, float r1, float r2)
-{   
-    float2 q = float2(length((eye-centre).xz)-r1,eye.y-centre.y);
+float TorusDistance(float3 eye, float3 centre, float r1, float r2, float3 rot)
+{   float3 neye = float3(eye.x*(cos(rot.z))+eye.y*sin(rot.z), -eye.x*sin(rot.z)+eye.y*cos(rot.z),eye.z);
+    float2 q = float2(length((neye-centre).xz)-r1,neye.y-centre.y);
     return length(q)-r2;
 }
 
@@ -137,7 +140,7 @@ float GetShapeDistance(Shape shape, float3 eye) {
         return CubeDistance(eye, shape.position, shape.size, shape.rotation);
     }
     else if (shape.shapeType == 2) {
-        return TorusDistance(eye, shape.position, shape.size.x, shape.size.y);
+        return TorusDistance(eye, shape.position, shape.size.x, shape.size.y, shape.rotation);
     }
 
     return maxDst;

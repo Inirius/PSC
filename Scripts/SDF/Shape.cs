@@ -34,5 +34,9 @@ public class Shape : MonoBehaviour
             return Vector3.Scale(transform.localScale, parentScale);
         }
     }
-    public Vector3 rotation;
+    public Vector3 rotation {
+        get {
+            return transform.eulerAngles;
+        }
+    }
 }
