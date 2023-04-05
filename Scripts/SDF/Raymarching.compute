@@ -35,17 +35,25 @@ struct Ray {
     float3 direction;
 };
 
+float3 Tourne(float3 rot,float3 coor) {
+    return float3(coor.x*(cos(rot.y)*cos(rot.z)-sin(rot.y)*cos(rot.x)*sin(rot.z))-coor.y*(cos(rot.y)*sin(rot.z)+sin(rot.y)*cos(rot.z)*cos(rot.x))+coor.z*sin(rot.y)*sin(rot.x),
+    coor.x*(sin(rot.y)*cos(rot.z)+cos(rot.y)*cos(rot.x)*sin(rot.z))+coor.y*(-sin(rot.y)*sin(rot.z)+cos(rot.y)*cos(rot.z)*cos(rot.x))-coor.z*cos(rot.y)*sin(rot.x),
+    coor.x*sin(rot.x)*sin(rot.z)+coor.y*sin(rot.x)*cos(rot.z)+coor.z*cos(rot.x));
+}
+
+float3 TourneInv(float3 rot,float3 coor) {
+    return float3(coor.x*(cos(rot.z)*cos(rot.y)-sin(rot.z)*cos(rot.x)*sin(rot.y))+coor.y*(cos(rot.z)*sin(rot.y)+sin(rot.z)*cos(rot.y)*cos(rot.x))+coor.z*sin(rot.z)*sin(rot.x),
+    -coor.x*(sin(rot.z)*cos(rot.y)+cos(rot.z)*cos(rot.x)*sin(rot.y))+coor.y*(-sin(rot.z)*sin(rot.y)+cos(rot.z)*cos(rot.y)*cos(rot.x))+coor.z*cos(rot.z)*sin(rot.x),
+    coor.x*sin(rot.x)*sin(rot.y)-coor.y*sin(rot.x)*cos(rot.y)+coor.z*cos(rot.x));
+}
+
 float SphereDistance(float3 eye, float3 centre, float radius) {
     return distance(eye, centre) - radius;
 }
 
  ///........................
 float CubeDistance(float3 eye, float3 centre, float3 size, float3 rot) {
-    float3 coor = eye - centre;
-    coor = float3(coor.x*(cos(rot.y)*cos(rot.z)-sin(rot.y)*cos(rot.x)*sin(rot.z))-coor.y*(cos(rot.y)*sin(rot.z)+sin(rot.y)*cos(rot.z)*cos(rot.x))+coor.z*sin(rot.y)*sin(rot.x),
-    coor.x*(sin(rot.y)*cos(rot.z)+cos(rot.y)*cos(rot.x)*sin(rot.z))+coor.y*(-sin(rot.y)*sin(rot.z)+cos(rot.y)*cos(rot.z)*cos(rot.x))-coor.z*cos(rot.y)*sin(rot.x),
-    coor.x*sin(rot.x)*sin(rot.z)+coor.y*sin(rot.x)*cos(rot.z)+coor.z*cos(rot.x));
-    float3 o = abs(coor) -size;
+    float3 o = abs(Tourne(rot,eye-centre)) -size;
     //float3 o = abs(eye-centre) -size;
     float ud = length(max(o,0));
     float n = max(max(min(o.x,0),min(o.y,0)), min(o.z,0));
@@ -54,8 +62,11 @@ float CubeDistance(float3 eye, float3 centre, float3 size, float3 rot) {
 
 // Following distance functions from http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 float TorusDistance(float3 eye, float3 centre, float r1, float r2, float3 rot)
-{   float3 neye = float3(eye.x*(cos(rot.z))+eye.y*sin(rot.z), -eye.x*sin(rot.z)+eye.y*cos(rot.z),eye.z);
-    float2 q = float2(length((neye-centre).xz)-r1,neye.y-centre.y);
+{   float3 coor = Tourne(rot,eye-centre);
+    
+    //float3 neye = float3(eye.x*(cos(rot.z))+eye.y*sin(rot.z), -eye.x*sin(rot.z)+eye.y*cos(rot.z),eye.z);
+    //float2 q = float2(length((neye-centre).xz)-r1,neye.y-centre.y);
+    float2 q = float2(length(coor.xz)-r1,coor.y);
     return length(q)-r2;
 }
 
@@ -146,6 +157,21 @@ float GetShapeDistance(Shape shape, float3 eye) {
     return maxDst;
 }
 
+float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
+   
+    if (shape.shapeType == 0) {
+        return SphereDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.x);
+    }
+    else if (shape.shapeType == 1) {
+        return CubeDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size, shape.rotation);
+    }
+    else if (shape.shapeType == 2) {
+        return TorusDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.x, shape.size.y, shape.rotation);
+    }
+
+    return maxDst;
+}
+
 
 float4 SceneInfo(float3 eye) {
     float globalDst = maxDst;
@@ -161,7 +187,7 @@ float4 SceneInfo(float3 eye) {
 
         for (int j = 0; j < numChildren; j ++) {
             Shape childShape = shapes[i+j+1];
-            float childDst = GetShapeDistance(childShape,eye);
+            float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
 
             float4 combined = Combine(localDst, childDst, localColour, childShape.colour, childShape.operation, childShape.blendStrength);
             localColour = combined.xyz;

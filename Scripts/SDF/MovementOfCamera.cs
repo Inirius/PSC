@@ -27,7 +27,7 @@ public class MovementOfCamera : MonoBehaviour
     private Vector2 _rotationXMinMax = new Vector2(-40, 40);
 
     [SerializeField]
-    private float velocityOfCamera = 1;
+    private float velocityOfCamera =10;
 
     float pi = 3.1415926535F;
 
@@ -56,17 +56,18 @@ public class MovementOfCamera : MonoBehaviour
         print(_rotationY);
         print(_rotationX);
         float r2 = _rotationY*pi/180;
+        float r1 = _rotationX*pi/180;
         if(Input.GetKey("up")){
-            transform.position = transform.position + new Vector3(Mathf.Sin(r2),0,Mathf.Cos(r2))*velocityOfCamera*Time.deltaTime;
+            transform.position = transform.position + new Vector3(Mathf.Sin(r2),0,Mathf.Cos(r2))*velocityOfCamera*5*Time.deltaTime;
         }
         if(Input.GetKey("down")){
-            transform.position = transform.position - new Vector3(Mathf.Sin(r2),0,Mathf.Cos(r2))*velocityOfCamera*Time.deltaTime;
+            transform.position = transform.position - new Vector3(Mathf.Sin(r2),0,Mathf.Cos(r2))*velocityOfCamera*5*Time.deltaTime;
         }
         if(Input.GetKey("right")){
-            transform.position = transform.position - new Vector3(-Mathf.Cos(r2),0,Mathf.Sin(r2))*velocityOfCamera*Time.deltaTime;
+            transform.position = transform.position - new Vector3(-Mathf.Cos(r2),0,Mathf.Sin(r2))*velocityOfCamera*5*Time.deltaTime;
         }
         if(Input.GetKey("left")){
-            transform.position = transform.position + new Vector3(-Mathf.Cos(r2),0,Mathf.Sin(r2))*velocityOfCamera*Time.deltaTime;
+            transform.position = transform.position + new Vector3(-Mathf.Cos(r2),0,Mathf.Sin(r2))*velocityOfCamera*5*Time.deltaTime;
         }
         if(Input.GetKey(KeyCode.Space)){
              transform.position = transform.position + new Vector3(0,1,0)*velocityOfCamera*Time.deltaTime;
@@ -74,13 +75,14 @@ public class MovementOfCamera : MonoBehaviour
         if(Input.GetKey(KeyCode.LeftShift)){
             transform.position = transform.position - new Vector3(0,1,0)*velocityOfCamera*Time.deltaTime;
         }
-        if(Input.GetKey("n")){
+        if(Input.GetKey("mouse 0")){
             var gameObject = new GameObject("Bouboule"+count);
             count++;
             gameObject.AddComponent<Shape>();
-            Shape temp = gameObject.GetComponent<Shape>();
+            gameObject.transform.parent = GameObject.Find("Bac").transform;
             // temp.shapeType = Torus;
-            gameObject.transform.position += new Vector3(0,5,0);
+            gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1),Mathf.Cos(r2)) *3;
+            gameObject.GetComponent<Shape>().operation = Operation.Cut;
             
                   }
     }
