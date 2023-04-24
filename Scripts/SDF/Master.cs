@@ -49,7 +49,10 @@ public class Master : MonoBehaviour {
             if (allShapes[i].transform.parent == null) {
 
                 Transform parentShape = allShapes[i].transform;
-                orderedShapes.Add (allShapes[i]);
+                if (allShapes[i].transform.name == "Four") {
+                    orderedShapes.Insert(0,allShapes[i]);
+                }
+                else {orderedShapes.Add (allShapes[i]);}
                 allShapes[i].numChildren = parentShape.childCount;
                 // Add all children of the shape (nested children not supported currently)
                 for (int j = 0; j < parentShape.childCount; j++) {

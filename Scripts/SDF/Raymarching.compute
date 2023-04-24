@@ -54,7 +54,6 @@ float SphereDistance(float3 eye, float3 centre, float radius) {
  ///........................
 float CubeDistance(float3 eye, float3 centre, float3 size, float3 rot) {
     float3 o = abs(Tourne(rot,eye-centre)) -size;
-    //float3 o = abs(eye-centre) -size;
     float ud = length(max(o,0));
     float n = max(max(min(o.x,0),min(o.y,0)), min(o.z,0));
     return ud+n;
@@ -63,9 +62,6 @@ float CubeDistance(float3 eye, float3 centre, float3 size, float3 rot) {
 // Following distance functions from http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
 float TorusDistance(float3 eye, float3 centre, float r1, float r2, float3 rot)
 {   float3 coor = Tourne(rot,eye-centre);
-    
-    //float3 neye = float3(eye.x*(cos(rot.z))+eye.y*sin(rot.z), -eye.x*sin(rot.z)+eye.y*cos(rot.z),eye.z);
-    //float2 q = float2(length((neye-centre).xz)-r1,neye.y-centre.y);
     float2 q = float2(length(coor.xz)-r1,coor.y);
     return length(q)-r2;
 }
@@ -233,6 +229,51 @@ float CalculateShadow(Ray ray, float dstToShadePoint) {
     return shadowIntensity + (1-shadowIntensity) * brightness;
 }
 
+float _Radius = 10000;
+float _Hot = 10;
+float _Cold = 0;
+float _Accuracy = 3;
+
+
+float SDFCurrent(float3 position) {
+    
+    return SphereDistance(position, float3(10,0,0), 3);
+}
+float random(float x)
+{
+    float y = sin(x) * 1000.0 - floor(sin(x) * 1000.0);
+    return y;
+}
+float solvewos(float3 p0) {
+    //if (SDFCurrent(p0)>0) return 1;
+    float epsilon = 0.1;
+    float sum = 0;
+    int walkSamples = 64;
+    float pi = 3.1415926;
+
+
+    for (int walk = 0; walk < walkSamples; walk++) {
+        float3 p = p0;
+        float flag = 1;
+        int iterations = 0;
+        while (SDFCurrent(p) > epsilon && iterations < 1000 && GetShapeDistance(shapes[0],p) < 0.1) {
+            float internalRadius = abs(SDFCurrent(p));
+            float theta = 2 * pi * random(walk);
+            float phi = pi * random(walk + 1.1);
+            p = float3(p.x + internalRadius * sin(theta) * cos(phi), p.y + internalRadius * sin(theta) * sin(phi), p.z + internalRadius * cos(theta));
+            iterations++;
+        }
+
+        float tempe;
+
+        if (SDFCurrent(p) <= epsilon) tempe = 1;
+        else tempe = 0;
+
+        sum += tempe / walkSamples;
+    }
+    return sum;
+}
+
 [numthreads(8,8,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
@@ -269,7 +310,13 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float dstToLight = (positionLight)?distance(offsetPos,_Light):maxDst;
             float shadow = CalculateShadow(ray, dstToLight);
 
-            Destination[id.xy] = float4(col * lighting * shadow ,1);
+            float wos = 0;
+
+            if(GetShapeDistance(shapes[0],pointOnSurface)<0.01){
+                wos = solvewos(pointOnSurface);
+            }
+
+            Destination[id.xy] = float4(col * lighting * shadow,1) + 5  * wos * float4(1,0,0,0);
 
             break;
         }
