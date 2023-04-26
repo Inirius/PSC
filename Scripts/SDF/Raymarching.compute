@@ -16,7 +16,6 @@ static const float shadowBias = epsilon * 50;
 struct Shape {
     
     float3 position;
-    
     float3 size;
     float3 colour;
     int shapeType;
@@ -24,6 +23,7 @@ struct Shape {
     float blendStrength;
     int numChildren;
     float3 rotation;
+    float conductivity;
 };
 
 StructuredBuffer<Shape> shapes;
@@ -66,15 +66,17 @@ float TorusDistance(float3 eye, float3 centre, float r1, float r2, float3 rot)
     return length(q)-r2;
 }
 
-float PrismDistance(float3 eye, float3 centre, float2 h) {
-    float3 q = abs(eye-centre);
-    return max(q.z-h.y,max(q.x*0.866025+eye.y*0.5,-eye.y)-h.x*0.5);
+float PrismDistance(float3 eye, float3 centre, float2 h, float3 rot) {
+    float3 neye = Tourne(rot,eye-centre) ;
+    float3 q = abs(Tourne(rot,eye-centre));
+    return max(q.z-h.y,max(q.x*0.866025+ neye.y*0.5,- neye.y)-h.x*0.5);
 }
 
 
-float CylinderDistance(float3 eye, float3 centre, float2 h) {
-    float2 d = abs(float2(length((eye).xz), eye.y)) - h;
-    return length(max(d,0.0)) + max(min(d.x,0),min(d. y,0));
+float CylinderDistance(float3 eye, float3 centre, float2 h, float3 rot) {
+    float3 neye = Tourne(rot,eye-centre);
+    float2 d = abs(float2(length((neye).xz), neye.y)) - h;
+    return length(max(d,0.0)) + max(min(d.x,0),min(d.y,0));
 }
 
 Ray CreateRay(float3 origin, float3 direction) {
@@ -149,6 +151,12 @@ float GetShapeDistance(Shape shape, float3 eye) {
     else if (shape.shapeType == 2) {
         return TorusDistance(eye, shape.position, shape.size.x, shape.size.y, shape.rotation);
     }
+    else if (shape.shapeType == 3) {
+        return PrismDistance(eye, shape.position, shape.size.xy, shape.rotation);
+    }
+    else if (shape.shapeType == 4) {
+        return CylinderDistance(eye, shape.position, shape.size.xy, shape.rotation);
+    }
 
     return maxDst;
 }
@@ -163,6 +171,12 @@ float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
     }
     else if (shape.shapeType == 2) {
         return TorusDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.x, shape.size.y, shape.rotation);
+    }
+    else if (shape.shapeType == 3) {
+        return PrismDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.xy, shape.rotation);
+    }
+    else if (shape.shapeType == 4) {
+        return CylinderDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.xy, shape.rotation);
     }
 
     return maxDst;
@@ -239,10 +253,10 @@ float SDFCurrent(float3 position) {
     
     return SphereDistance(position, float3(10,0,0), 3);
 }
-float random(float x)
+
+float random(float2 x)
 {
-    float y = sin(x) * 1000.0 - floor(sin(x) * 1000.0);
-    return y;
+    return frac(sin(dot(x,float2(12.9898,78.233)))*43758.5453123);
 }
 float solvewos(float3 p0) {
     //if (SDFCurrent(p0)>0) return 1;
@@ -256,10 +270,10 @@ float solvewos(float3 p0) {
         float3 p = p0;
         float flag = 1;
         int iterations = 0;
-        while (SDFCurrent(p) > epsilon && iterations < 1000 && GetShapeDistance(shapes[0],p) < 0.1) {
+        while (SDFCurrent(p) > epsilon && iterations < 100 && GetShapeDistance(shapes[0],p) < 0.2  ) {
             float internalRadius = abs(SDFCurrent(p));
-            float theta = 2 * pi * random(walk);
-            float phi = pi * random(walk + 1.1);
+            float theta = 2 * pi * random((walk+1)*p.xz);
+            float phi = pi * random((walk*walk+1)*p.xy);
             p = float3(p.x + internalRadius * sin(theta) * cos(phi), p.y + internalRadius * sin(theta) * sin(phi), p.z + internalRadius * cos(theta));
             iterations++;
         }
@@ -316,7 +330,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 wos = solvewos(pointOnSurface);
             }
 
-            Destination[id.xy] = float4(col * lighting * shadow,1) + 5  * wos * float4(1,0,0,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + shapes[0].conductivity  * wos * float4(1,0,0,0);
 
             break;
         }

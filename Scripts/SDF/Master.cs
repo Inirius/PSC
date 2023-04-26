@@ -76,7 +76,8 @@ public class Master : MonoBehaviour {
                 operation = (int) s.operation,
                 blendStrength = s.blendStrength*3,
                 numChildren = s.numChildren,
-                rotation = s.rotation
+                rotation = s.rotation,
+                conductivity = s.conductivity
             };
         }
 
@@ -116,9 +117,10 @@ public class Master : MonoBehaviour {
         public float blendStrength;
         public int numChildren;
         public Vector3 rotation;
+        public float conductivity;
 
         public static int GetSize () {
-            return sizeof (float) * 13 + sizeof (int) * 3;
+            return sizeof (float) * 14 + sizeof (int) * 3;
         }
     }
 }
