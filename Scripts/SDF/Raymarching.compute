@@ -66,17 +66,30 @@ float TorusDistance(float3 eye, float3 centre, float r1, float r2, float3 rot)
     return length(q)-r2;
 }
 
-float PrismDistance(float3 eye, float3 centre, float2 h, float3 rot) {
-    float3 neye = Tourne(rot,eye-centre) ;
+float PrismDistance(float3 eye, float3 centre, float3 h, float3 rot) {
+    float3 neye = Tourne(rot,eye-centre);
     float3 q = abs(Tourne(rot,eye-centre));
-    return max(q.z-h.y,max(q.x*0.866025+ neye.y*0.5,- neye.y)-h.x*0.5);
+    return max(q.z-h.y,max(q.x*cos(h.z)+ neye.y*sin(h.z),- neye.y)-h.x*sin(h.z));
 }
 
 
 float CylinderDistance(float3 eye, float3 centre, float2 h, float3 rot) {
-    float3 neye = Tourne(rot,eye-centre);
+    float3 neye = TourneInv(rot,eye-centre);
     float2 d = abs(float2(length((neye).xz), neye.y)) - h;
     return length(max(d,0.0)) + max(min(d.x,0),min(d.y,0));
+}
+
+float ConeDistance(float3 eye, float3 centre, float3 h, float3 rot)
+{
+    float2 q = h.z * float2(h.x / h.y, -1.0);
+    float3 p = Tourne(rot,eye-centre);
+    float2 w = float2(sqrt(p.x * p.x + p.z * p.z), p.y);
+    float2 a = w - q * clamp(dot(w, q) / dot(q, q), 0.0, 1.0);
+    float2 b = w - q * float2(clamp(w.x / q.x, 0.0, 1.0), 1.0);
+    float k = sign(q.y);
+    float d = min(dot(a, a), dot(b, b));
+    float s = max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
+    return sqrt(d) * sign(s);
 }
 
 Ray CreateRay(float3 origin, float3 direction) {
@@ -152,10 +165,13 @@ float GetShapeDistance(Shape shape, float3 eye) {
         return TorusDistance(eye, shape.position, shape.size.x, shape.size.y, shape.rotation);
     }
     else if (shape.shapeType == 3) {
-        return PrismDistance(eye, shape.position, shape.size.xy, shape.rotation);
+        return PrismDistance(eye, shape.position, shape.size, shape.rotation);
     }
     else if (shape.shapeType == 4) {
         return CylinderDistance(eye, shape.position, shape.size.xy, shape.rotation);
+    }
+    else if (shape.shapeType == 5) {
+        return ConeDistance(eye, shape.position, shape.size, shape.rotation);
     }
 
     return maxDst;
@@ -173,10 +189,13 @@ float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
         return TorusDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.x, shape.size.y, shape.rotation);
     }
     else if (shape.shapeType == 3) {
-        return PrismDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.xy, shape.rotation);
+        return PrismDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size, shape.rotation);
     }
     else if (shape.shapeType == 4) {
         return CylinderDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.xy, shape.rotation);
+    }
+    else if (shape.shapeType == 5) {
+        return ConeDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size, shape.rotation);
     }
 
     return maxDst;
@@ -262,7 +281,7 @@ float solvewos(float3 p0) {
     //if (SDFCurrent(p0)>0) return 1;
     float epsilon = 0.1;
     float sum = 0;
-    int walkSamples = 64;
+    int walkSamples = 16;
     float pi = 3.1415926;
 
 
@@ -330,7 +349,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 wos = solvewos(pointOnSurface);
             }
 
-            Destination[id.xy] = float4(col * lighting * shadow,1) + shapes[0].conductivity  * wos * float4(1,0,0,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + shapes[0].conductivity  * wos * float4(1,0.01,0.01,0);
 
             break;
         }

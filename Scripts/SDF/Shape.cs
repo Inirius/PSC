@@ -5,7 +5,7 @@ using UnityEngine;
 public class Shape : MonoBehaviour
 {
 
-    public enum ShapeType {Sphere,Cube,Torus,Prism,Cylinder};
+    public enum ShapeType {Sphere,Cube,Torus,Prism,Cylinder,Cone};
     public enum Operation {None, Blend, Cut,Mask}
 
     public ShapeType shapeType;
@@ -71,11 +71,11 @@ public class Shape : MonoBehaviour
     return q.magnitude - r2;
 }
 
-private float PrismDistance(Vector3 eye, Vector3 center, Vector2 h, Vector3 rot)
+private float PrismDistance(Vector3 eye, Vector3 center, Vector3 h, Vector3 rot)
 {
     Vector3 neye = Tourne(rot, eye - center);
     Vector3 q = new Vector3(Mathf.Abs(neye.x), Mathf.Abs(neye.y), Mathf.Abs(neye.z));
-    return Mathf.Max(q.z - h.y, Mathf.Max(q.x * 0.866025f + neye.y * 0.5f, -neye.y) - h.x * 0.5f);
+    return Mathf.Max(q.z - h.y, Mathf.Max(q.x * Mathf.Cos(h.z) + neye.y * Mathf.Sin(h.z), -neye.y) - h.x * Mathf.Sin(h.z));
 }
 
 private float CylinderDistance(Vector3 eye, Vector3 center, Vector2 h, Vector3 rot)
@@ -85,6 +85,20 @@ private float CylinderDistance(Vector3 eye, Vector3 center, Vector2 h, Vector3 r
     Vector2 d = new Vector2(dxz, Mathf.Abs(neye.y)) - h;
     return Mathf.Sqrt(Mathf.Max(d.x * d.x + Mathf.Max(d.y, 0f) * Mathf.Max(d.y, 0f), 0f)) + Mathf.Max(Mathf.Min(d.x, 0f), Mathf.Min(d.y, 0f));
 }
+
+float ConeDistance(Vector3 eye, Vector3 centre, Vector3 h, Vector3 rot)
+{
+    Vector2 q = h.z * new Vector2(h.x / h.y, -1.0f);
+    Vector3 p = Tourne(rot, eye - centre);
+    Vector2 w = new Vector2(Mathf.Sqrt(p.x * p.x + p.z * p.z), p.y);
+    Vector2 a = w - q * Mathf.Clamp(Vector2.Dot(w, q) / Vector2.Dot(q, q), 0.0f, 1.0f);
+    Vector2 b = w - q * new Vector2(Mathf.Clamp(w.x / q.x, 0.0f, 1.0f), 1.0f);
+    float k = Mathf.Sign(q.y);
+    float d = Mathf.Min(Vector2.Dot(a, a), Vector2.Dot(b, b));
+    float s = Mathf.Max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
+    return Mathf.Sqrt(d) * Mathf.Sign(s);
+}
+
 public float GetShapeDistance( Vector3 eye) {
    
     if (shapeType == ShapeType.Sphere) {
@@ -97,10 +111,13 @@ public float GetShapeDistance( Vector3 eye) {
         return TorusDistance(eye, Position, Scale.x, Scale.y, rotation);
     }
     else if (shapeType == ShapeType.Prism) {
-        return PrismDistance(eye, Position, new Vector2(Scale.x, Scale.y), rotation);
+        return PrismDistance(eye, Position, Scale, rotation);
     }
     else if (shapeType == ShapeType.Cylinder) {
         return CylinderDistance(eye, Position, new Vector2(Scale.x, Scale.y) , rotation);
+    }
+    else if (shapeType == ShapeType.Cone) {
+        return ConeDistance(eye, Position, Scale, rotation);
     }
     else {
         return 0.0f;
