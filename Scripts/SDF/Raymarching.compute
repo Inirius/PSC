@@ -74,7 +74,7 @@ float PrismDistance(float3 eye, float3 centre, float3 h, float3 rot) {
 
 
 float CylinderDistance(float3 eye, float3 centre, float2 h, float3 rot) {
-    float3 neye = TourneInv(rot,eye-centre);
+    float3 neye = Tourne(rot,eye-centre);
     float2 d = abs(float2(length((neye).xz), neye.y)) - h;
     return length(max(d,0.0)) + max(min(d.x,0),min(d.y,0));
 }
