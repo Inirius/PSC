@@ -36,7 +36,7 @@ public class Shape : MonoBehaviour
     }
     public Vector3 rotation {
         get {
-            return transform.eulerAngles;
+            return transform.localEulerAngles;
         }
     }
 

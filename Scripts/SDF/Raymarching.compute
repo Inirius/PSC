@@ -180,22 +180,22 @@ float GetShapeDistance(Shape shape, float3 eye) {
 float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
    
     if (shape.shapeType == 0) {
-        return SphereDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.x);
+        return SphereDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size.x);
     }
     else if (shape.shapeType == 1) {
-        return CubeDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size, shape.rotation);
+        return CubeDistance(parent + Tourne(rot,eye-parent), shape.position, shape.size, shape.rotation);
     }
     else if (shape.shapeType == 2) {
-        return TorusDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.x, shape.size.y, shape.rotation);
+        return TorusDistance(parent + Tourne(rot,eye-parent) , shape.position, shape.size.x, shape.size.y, shape.rotation);
     }
     else if (shape.shapeType == 3) {
-        return PrismDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size, shape.rotation);
+        return PrismDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size, shape.rotation);
     }
     else if (shape.shapeType == 4) {
-        return CylinderDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size.xy, shape.rotation);
+        return CylinderDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size.xy, shape.rotation);
     }
     else if (shape.shapeType == 5) {
-        return ConeDistance(eye, parent + TourneInv(rot,shape.position - parent), shape.size, shape.rotation);
+        return ConeDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size, shape.rotation);
     }
 
     return maxDst;
