@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ObjectMove : MonoBehaviour
 {
+    public int number;
+    private int chosen;
     
     // Start is called before the first frame update
     void Start()
@@ -13,7 +15,26 @@ public class ObjectMove : MonoBehaviour
 
     // Update is called once per frame
     void Update()
-    {
+    {   
+        
+    if(Input.GetKey("0")) {
+              chosen = 0;
+       }
+    if(Input.GetKey("1")) {
+              chosen = 1;
+       }
+    if(Input.GetKey("2")) {
+                  chosen = 2;
+        }
+    if(Input.GetKey("3")) {
+                  chosen = 3;
+        }
+    if(Input.GetKey("4")) {
+                  chosen = 4;
+        }
+
+    if(chosen == number) {
+
         if(Input.GetKey("z")){
             transform.position = transform.position + new Vector3(1,0,0)*2*Time.deltaTime;
         }
@@ -53,5 +74,6 @@ public class ObjectMove : MonoBehaviour
         if(Input.GetKey("b")){
             transform.eulerAngles = transform.eulerAngles - new Vector3(1,0,0)*Time.deltaTime;
         }
+    }
 }
 }

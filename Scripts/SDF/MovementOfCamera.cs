@@ -33,9 +33,14 @@ public class MovementOfCamera : MonoBehaviour
 
     int count =0;
 
+    void Start()
+    {
+          
+    }
 
     void Update()
     {
+        var epee = GameObject.Find("Four");
         float mouseX = Input.GetAxis("Mouse X") * _mouseSensitivity;
         float mouseY = -Input.GetAxis("Mouse Y") * _mouseSensitivity;
 
@@ -57,6 +62,18 @@ public class MovementOfCamera : MonoBehaviour
         print(_rotationX);
         float r2 = _rotationY*pi/180;
         float r1 = _rotationX*pi/180;
+        float cos_a = Mathf.Cos(r1);
+        float sin_a = Mathf.Sin(r1);
+        float cos_b = Mathf.Cos(r2);
+        float sin_b = Mathf.Sin(r2);
+
+        // Move sword
+        epee.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.1f,Mathf.Cos(r2)) *5;
+        //epee.transform.eulerAngles = new Vector3 (-Mathf.Asin(sin_a * cos_b),-Mathf.Atan2(sin_a, cos_a),-Mathf.Atan2(cos_b, sin_b));
+        if (r1>0) {epee.transform.eulerAngles = new Vector3 (-3*pi/5-r1,0,0);}
+        else {epee.transform.eulerAngles = new Vector3 (-r1,0,0);}
+        //epee.transform.eulerAngles = new Vector3 (-r1,0,0);
+
         if(Input.GetKey("up")){
             transform.position = transform.position + new Vector3(Mathf.Sin(r2),0,Mathf.Cos(r2))*velocityOfCamera*5*Time.deltaTime;
         }
@@ -80,9 +97,11 @@ public class MovementOfCamera : MonoBehaviour
             count++;
             gameObject.AddComponent<Shape>();
             gameObject.transform.parent = GameObject.Find("Bac").transform;
-            // temp.shapeType = Torus;
-            gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1),Mathf.Cos(r2)) *3;
+            gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
+            gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.125f,Mathf.Cos(r2)) *4;
             gameObject.GetComponent<Shape>().operation = Operation.Cut;
+            gameObject.transform.localEulerAngles = new Vector3(epee.transform.localEulerAngles.x,0f,0f);
+            gameObject.transform.localScale = new Vector3(0.3f,0.05f,0.4f);
             
                   }
     }

@@ -270,7 +270,7 @@ float _Accuracy = 3;
 
 float SDFCurrent(float3 position) {
     
-    return SphereDistance(position, float3(10,0,0), 3);
+    return SphereDistance(position, float3(10,0,0), 1);
 }
 
 float random(float2 x)
@@ -292,7 +292,7 @@ float solvewos(float3 p0) {
         while (SDFCurrent(p) > epsilon && iterations < 100 && GetShapeDistance(shapes[0],p) < 0.2  ) {
             float internalRadius = abs(SDFCurrent(p));
             float theta = 2 * pi * random((walk+1)*p.xz);
-            float phi = pi * random((walk*walk+1)*p.xy);
+            float phi = pi * random((walk*walk+1)*p.xy*shapes[0].conductivity);
             p = float3(p.x + internalRadius * sin(theta) * cos(phi), p.y + internalRadius * sin(theta) * sin(phi), p.z + internalRadius * cos(theta));
             iterations++;
         }
