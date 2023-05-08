@@ -32,6 +32,7 @@ public class MovementOfCamera : MonoBehaviour
     float pi = 3.1415926535F;
 
     int count =0;
+    bool isMoving = false;
 
     void Start()
     {
@@ -68,11 +69,16 @@ public class MovementOfCamera : MonoBehaviour
         float sin_b = Mathf.Sin(r2);
 
         // Move sword
-        epee.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.1f,Mathf.Cos(r2)) *5;
+        if (isMoving) {epee.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.1f,Mathf.Cos(r2)) *5;
         //epee.transform.eulerAngles = new Vector3 (-Mathf.Asin(sin_a * cos_b),-Mathf.Atan2(sin_a, cos_a),-Mathf.Atan2(cos_b, sin_b));
         if (r1>0) {epee.transform.eulerAngles = new Vector3 (-3*pi/5-r1,0,0);}
         else {epee.transform.eulerAngles = new Vector3 (-r1,0,0);}
         //epee.transform.eulerAngles = new Vector3 (-r1,0,0);
+        }
+
+        if(Input.GetKey("mouse 1")){
+            isMoving = !isMoving;
+        }
 
         if(Input.GetKey("up")){
             transform.position = transform.position + new Vector3(Mathf.Sin(r2),0,Mathf.Cos(r2))*velocityOfCamera*5*Time.deltaTime;
@@ -102,6 +108,7 @@ public class MovementOfCamera : MonoBehaviour
             gameObject.GetComponent<Shape>().operation = Operation.Cut;
             gameObject.transform.localEulerAngles = new Vector3(epee.transform.localEulerAngles.x,0f,0f);
             gameObject.transform.localScale = new Vector3(0.3f,0.05f,0.4f);
+            gameObject.GetComponent<Shape>().colour = Color.yellow;
             
                   }
     }
