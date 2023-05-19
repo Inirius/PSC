@@ -30,6 +30,17 @@ StructuredBuffer<Shape> shapes;
 int numShapes;
 
 
+float sin_p(float x) {
+    return (x-pow(x,3)/6+pow(x,5)/120-pow(x,7)/5040);//+pow(x,9)/362880-pow(x,11)/39916800+pow(x,13)/6227020800-pow(x,15)/1307674368000+pow(x,17)/355687428096000-pow(x,19)/121645100408832000);
+    //return pow(x,3);
+}
+
+float cos_p(float x) {
+    //return (1-pow(x,2)/4+pow(x,4)/24-pow(x,6)/720+pow(x,8)/40320-pow(x,10)/3628800+pow(x,12)/479001600-pow(x,14)/87178291200+pow(x,16)/20922789888000-pow(x,18)/6402373705728000+pow(x,20)/2432902008176640000);
+    return 0;
+}
+
+
 struct Ray {
     float3 origin;
     float3 direction;
@@ -201,6 +212,27 @@ float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
     return maxDst;
 }
 
+float GetObjectDistance(int i, float3 eye) {
+    // eye : position du point
+    // i : index de l'objet
+
+        Shape shape = shapes[i];
+        int numChildren = shape.numChildren;
+
+        float localDst = GetShapeDistance(shape,eye);
+
+        for (int j = 0; j < numChildren; j ++) {
+            Shape childShape = shapes[i+j+1];
+            float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
+
+        // modifier le combine pour qu'il renvoie l'indice du fils le plus proche
+            float4 combined = Combine(localDst, childDst, shape.colour, childShape.colour, childShape.operation, childShape.blendStrength);
+            localDst = combined.w;
+        }
+        
+    return localDst;
+}
+
 
 float4 SceneInfo(float3 eye) {
     float globalDst = maxDst;
@@ -289,10 +321,10 @@ float solvewos(float3 p0) {
         float3 p = p0;
         float flag = 1;
         int iterations = 0;
-        while (SDFCurrent(p) > epsilon && iterations < 100 && GetShapeDistance(shapes[0],p) < 0.2  ) {
+        while (SDFCurrent(p) > epsilon && iterations < 100 && GetObjectDistance(0,p) < 0.2  ) {
             float internalRadius = abs(SDFCurrent(p));
             float theta = 2 * pi * random((walk+1)*p.xz);
-            float phi = pi * random((walk*walk+1)*p.xy*shapes[0].conductivity);
+            float phi = pi * random((walk*walk+1)*p.xy*shapes[0].conductivity*100000000);
             p = float3(p.x + internalRadius * sin(theta) * cos(phi), p.y + internalRadius * sin(theta) * sin(phi), p.z + internalRadius * cos(theta));
             iterations++;
         }
@@ -345,7 +377,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             float wos = 0;
 
-            if(GetShapeDistance(shapes[0],pointOnSurface)<0.01){
+            if(GetObjectDistance(0,pointOnSurface)<0.01){
                 wos = solvewos(pointOnSurface);
             }
 

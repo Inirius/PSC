@@ -69,7 +69,7 @@ public class MovementOfCamera : MonoBehaviour
         float sin_b = Mathf.Sin(r2);
 
         // Move sword
-        if (isMoving) {epee.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.1f,Mathf.Cos(r2)) *5;
+        if (isMoving) {epee.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.1f,Mathf.Cos(r2)) *2;
         //epee.transform.eulerAngles = new Vector3 (-Mathf.Asin(sin_a * cos_b),-Mathf.Atan2(sin_a, cos_a),-Mathf.Atan2(cos_b, sin_b));
         if (r1>0) {epee.transform.eulerAngles = new Vector3 (-3*pi/5-r1,0,0);}
         else {epee.transform.eulerAngles = new Vector3 (-r1,0,0);}
@@ -104,7 +104,7 @@ public class MovementOfCamera : MonoBehaviour
             gameObject.AddComponent<Shape>();
             gameObject.transform.parent = GameObject.Find("Bac").transform;
             gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
-            gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.125f,Mathf.Cos(r2)) *4;
+            gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.125f,Mathf.Cos(r2)) *2;
             gameObject.GetComponent<Shape>().operation = Operation.Cut;
             gameObject.transform.localEulerAngles = new Vector3(epee.transform.localEulerAngles.x,0f,0f);
             gameObject.transform.localScale = new Vector3(0.3f,0.05f,0.4f);
