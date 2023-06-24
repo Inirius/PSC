@@ -40,6 +40,10 @@ float cos_p(float x) {
     return cos(x);
 }
 
+float sinh(float x) {
+    return (exp(x)-exp(-x))/2;
+}
+
 
 struct Ray {
     float3 origin;
@@ -302,7 +306,9 @@ float _Accuracy = 3;
 
 float distance_chaud(float3 position) {
     
-    return SphereDistance(position, float3(10,0,0), 1);
+   // return SphereDistance(position, float3(10,0,0), 1);
+
+   return GetObjectDistance(2,position);
 }
 
 float random(float2 x)
@@ -315,23 +321,24 @@ float solvewos(float3 p0) {
     float sum = 0;
     int walkSamples = 3;
     float pi = 3.1415926;
-
+    float sqrsigma = 1.0;
 
     for (int walk = 0; walk < walkSamples; walk++) {
         float3 p = p0;
         float flag = 1;
         int iterations = 0;
+        float tempe = 1.0;
+
         while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p) < 0.3  ) {
             float internalRadius = abs(GetObjectDistance(0,p));
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
             float phi = pi * random((walk*walk+1)*(shapes[0].conductivity*shapes[0].conductivity+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));
+            tempe = tempe * 1/(4*pi*(internalRadius+0.000000001)) * sqrsigma / sinh(sqrsigma*(internalRadius+0.000000001));
             iterations++;
         }
 
-        float tempe;
-
-        if (distance_chaud(p) <= epsilon) tempe = 100;
+        if (distance_chaud(p) <= epsilon) tempe = tempe * 100;
         else tempe = 0;
 
         sum += tempe;
