@@ -98,18 +98,18 @@ public class MovementOfCamera : MonoBehaviour
         if(Input.GetKey(KeyCode.LeftShift)){
             transform.position = transform.position - new Vector3(0,1,0)*velocityOfCamera*Time.deltaTime;
         }
-        if(Input.GetKey("mouse 0")){
-            var gameObject = new GameObject("Bouboule"+count);
-            count++;
-            gameObject.AddComponent<Shape>();
-            gameObject.transform.parent = GameObject.Find("Bac").transform;
-            gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
-            gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.125f,Mathf.Cos(r2)) *2;
-            gameObject.GetComponent<Shape>().operation = Operation.Cut;
-            gameObject.transform.localEulerAngles = new Vector3(epee.transform.localEulerAngles.x,0f,0f);
-            gameObject.transform.localScale = new Vector3(0.3f,0.05f,0.4f);
-            gameObject.GetComponent<Shape>().colour = Color.yellow;
+        //if(Input.GetKey("mouse 0")){
+          //  var gameObject = new GameObject("Bouboule"+count);
+            //count++;
+            //gameObject.AddComponent<Shape>();
+           // gameObject.transform.parent = GameObject.Find("Bac").transform;
+            //gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
+            //gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1)-0.125f,Mathf.Cos(r2)) *2;
+            //gameObject.GetComponent<Shape>().operation = Operation.Cut;
+           // gameObject.transform.localEulerAngles = new Vector3(epee.transform.localEulerAngles.x,0f,0f);
+            //gameObject.transform.localScale = new Vector3(0.3f,0.05f,0.4f);
+            //gameObject.GetComponent<Shape>().colour = Color.yellow;
             
-                  }
+             //     }
     }
 }
