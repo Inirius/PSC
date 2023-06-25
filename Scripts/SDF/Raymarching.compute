@@ -44,7 +44,6 @@ float sinh(float x) {
     return (exp(x)-exp(-x))/2;
 }
 
-
 struct Ray {
     float3 origin;
     float3 direction;
