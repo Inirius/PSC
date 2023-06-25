@@ -215,9 +215,10 @@ float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
     return maxDst;
 }
 
-float GetObjectDistance(int i, float3 eye) {
+float GetObjectDistance(int i, float3 eye, bool util) {
     // eye : position du point
     // i : index de l'objet
+    // util : considérer les objets cachés 
 
         Shape shape = shapes[i];
         int numChildren = shape.numChildren;
@@ -227,9 +228,10 @@ float GetObjectDistance(int i, float3 eye) {
         for (int j = 0; j < numChildren; j ++) {
             Shape childShape = shapes[i+j+1];
             float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
-
+            int ope = childShape.operation;
+           if (ope == 4)  ope = (1-util) * ope;
         // modifier le combine pour qu'il renvoie l'indice du fils le plus proche
-            float4 combined = Combine(localDst, childDst, shape.colour, childShape.colour, childShape.operation, childShape.blendStrength);
+            float4 combined = Combine(localDst, childDst, shape.colour, childShape.colour, ope, childShape.blendStrength);
             localDst = combined.w;
         }
         
@@ -307,7 +309,7 @@ float distance_chaud(float3 position) {
     
    // return SphereDistance(position, float3(10,0,0), 1);
 
-   return GetObjectDistance(2,position);
+   return GetObjectDistance(2,position,true);
 }
 
 float random(float2 x)
@@ -328,8 +330,8 @@ float solvewos(float3 p0) {
         int iterations = 0;
         float tempe = 1.0;
 
-        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p) < 0.3  ) {
-            float internalRadius = abs(GetObjectDistance(0,p));
+        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,false) < 0.3  ) {
+            float internalRadius = abs(GetObjectDistance(0,p,false));
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
             float phi = pi * random((walk*walk+1)*(shapes[0].conductivity*shapes[0].conductivity+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));
@@ -384,7 +386,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             float wos = 0;
 
-            if(GetObjectDistance(0,pointOnSurface)<0.01){
+            if(GetObjectDistance(0,pointOnSurface,false)<0.01){
                 wos = solvewos(pointOnSurface);
             }
 
