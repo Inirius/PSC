@@ -306,6 +306,7 @@ float _Accuracy = 3;
 float distance_chaud(float3 position) {
     
     //return SphereDistance(position, float3(10,0,0), 1);
+    
     return GetObjectDistance(2,position);
 }
 
