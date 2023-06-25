@@ -318,9 +318,9 @@ float random(float2 x)
 }
 float solvewos(float3 p0) {
     //if (distance_chaud(p0)>0) return 1;
-    float epsilon = 0.01;
+    float epsilon = 0.05;
     float sum = 0;
-    int walkSamples = 3;
+    int walkSamples = 8;
     float pi = 3.1415926;
     float sqrsigma = 1.0;
 
@@ -330,7 +330,7 @@ float solvewos(float3 p0) {
         int iterations = 0;
         float tempe = 1.0;
 
-        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,false) < 0.3  ) {
+        while (distance_chaud(p) > epsilon && iterations < 10 && GetObjectDistance(0,p,false) < 0.3  ) {
             float internalRadius = abs(GetObjectDistance(0,p,false));
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
             float phi = pi * random((walk*walk+1)*(shapes[0].conductivity*shapes[0].conductivity+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
@@ -386,7 +386,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             float wos = 0;
 
-            if(GetObjectDistance(0,pointOnSurface,false)<0.01){
+            if(GetObjectDistance(0,pointOnSurface,false)<0.001){
                 wos = solvewos(pointOnSurface);
             }
 

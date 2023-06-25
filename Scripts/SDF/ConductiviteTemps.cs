@@ -32,8 +32,8 @@ public class ConductiviteTemps : MonoBehaviour
                 gameObject.AddComponent<Shape>();
                 gameObject.transform.parent = chaud.transform;
                 gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
-                gameObject.transform.localScale = new Vector3(0.5f,0.5f,0.5f);
-                gameObject.transform.position = chaud.transform.position + count/5.0f * (transform.position - chaud.transform.position);
+                gameObject.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
+                gameObject.transform.position = chaud.transform.position + count/15.0f * (transform.position - chaud.transform.position);
                 gameObject.GetComponent<Shape>().operation = Operation.Hide;
                 temps = 0.01f;
             }
