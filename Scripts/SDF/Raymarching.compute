@@ -316,10 +316,11 @@ float random(float2 x)
 {
     return frac(sin_p(dot(x,float2(12.9898,78.233)))*43758.5453123);
 }
-float solvewos(float3 p0) {
-    //if (distance_chaud(p0)>0) return 1;
+float2 solvewos(float3 p0) {
+    //if (distance_chaud(p0)<0) return float2(1,0);
     float epsilon = 0.005;
     float sum = 0;
+    float sum1 = 0;
     int walkSamples = 10;
     float pi = 3.1415926;
     float sqrsigma = 1.0;
@@ -328,7 +329,7 @@ float solvewos(float3 p0) {
         float3 p = p0;
         float flag = 1;
         int iterations = 0;
-        float tempe = 1.0;
+        float tempe = 0.0000000001;
 
         while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,false) < 0.1  ) {
             float internalRadius = abs(GetObjectDistance(0,p,false)-0.1);
@@ -339,12 +340,16 @@ float solvewos(float3 p0) {
             iterations++;
         }
 
-        if (distance_chaud(p) <= epsilon) tempe = tempe * 100;
-        else tempe = 0;
-
-        sum += tempe;
+        if (distance_chaud(p) <= epsilon) {
+            tempe = tempe * 1;
+            sum += 1000;
+        }
+        else {
+            tempe = 0;
+        }
+        sum1 += tempe;
     }
-    return (sum/walkSamples);
+    return float2(sum/walkSamples , sum1/walkSamples);
 }
 
 [numthreads(8,8,1)]
@@ -372,7 +377,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float3 lightDir = (positionLight)?normalize(_Light-ray.origin):-_Light;
             float lighting = saturate(saturate(dot(normal,lightDir)));
             float3 col = sceneInfo.xyz;
-            float cond = sceneInfo.x * shapes[0].conductivity / 10;
+            float cond = sceneInfo.x * shapes[0].conductivity / 1000000000;
             
             // Shadow
             float3 offsetPos = pointOnSurface + normal * shadowBias;
@@ -384,13 +389,16 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float dstToLight = (positionLight)?distance(offsetPos,_Light):maxDst;
             float shadow = CalculateShadow(ray, dstToLight);
 
-            float wos = 0;
+            float2 wos;
 
-            if(GetObjectDistance(0,pointOnSurface,false)<0.001){
+            if (GetObjectDistance(0,pointOnSurface,false)<0.001) {
                 wos = solvewos(pointOnSurface);
             }
+            else {
+                wos = float2(0,0);
+            }
 
-            Destination[id.xy] = float4(col * lighting * shadow,1) + cond  * wos * float4(0.01,0,0,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + (wos.x + cond  * wos.y / 1000000) * float4(0.001,0,0,1);
 
             break;
         }
