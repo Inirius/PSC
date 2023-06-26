@@ -309,7 +309,7 @@ float distance_chaud(float3 position) {
     
    // return SphereDistance(position, float3(10,0,0), 1);
 
-   return GetObjectDistance(0,position,true);
+   return GetObjectDistance(2,position,true);
 }
 
 float random(float2 x)
@@ -318,9 +318,9 @@ float random(float2 x)
 }
 float solvewos(float3 p0) {
     //if (distance_chaud(p0)>0) return 1;
-    float epsilon = 0.05;
+    float epsilon = 0.005;
     float sum = 0;
-    int walkSamples = 3;
+    int walkSamples = 10;
     float pi = 3.1415926;
     float sqrsigma = 1.0;
 
@@ -330,8 +330,8 @@ float solvewos(float3 p0) {
         int iterations = 0;
         float tempe = 1.0;
 
-        while (distance_chaud(p) > epsilon && iterations < 10 && GetObjectDistance(0,p,false) < 0.3  ) {
-            float internalRadius = abs(GetObjectDistance(0,p,false));
+        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,false) < 0.1  ) {
+            float internalRadius = abs(GetObjectDistance(0,p,false)-0.1);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
             float phi = pi * random((walk*walk+1)*(shapes[0].conductivity*shapes[0].conductivity+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));
@@ -390,7 +390,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 wos = solvewos(pointOnSurface);
             }
 
-            Destination[id.xy] = float4(col * lighting * shadow,1) + cond  * wos * float4(0.01,0.0001,0.0001,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + cond  * wos * float4(0.01,0,0,0);
 
             break;
         }
