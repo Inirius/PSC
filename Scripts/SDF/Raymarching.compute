@@ -309,7 +309,7 @@ float distance_chaud(float3 position) {
     
    // return SphereDistance(position, float3(10,0,0), 1);
 
-   return GetObjectDistance(2,position,true);
+   return GetObjectDistance(0,position,true);
 }
 
 float random(float2 x)
@@ -320,7 +320,7 @@ float solvewos(float3 p0) {
     //if (distance_chaud(p0)>0) return 1;
     float epsilon = 0.05;
     float sum = 0;
-    int walkSamples = 8;
+    int walkSamples = 3;
     float pi = 3.1415926;
     float sqrsigma = 1.0;
 
@@ -372,7 +372,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float3 lightDir = (positionLight)?normalize(_Light-ray.origin):-_Light;
             float lighting = saturate(saturate(dot(normal,lightDir)));
             float3 col = sceneInfo.xyz;
-            float cond = sceneInfo.x * shapes[0].conductivity;
+            float cond = sceneInfo.x * shapes[0].conductivity / 10;
             
             // Shadow
             float3 offsetPos = pointOnSurface + normal * shadowBias;

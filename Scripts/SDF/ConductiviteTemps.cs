@@ -6,7 +6,7 @@ using static Shape;
 public class ConductiviteTemps : MonoBehaviour
 {
     Vector3 centre = new Vector3(10,0,0);
-    float rayon = 0;
+    float rayon = 0.0f;
     float temps = 0.0f;
     int count =0;
     public float dist = 0.0f;
@@ -23,6 +23,7 @@ public class ConductiviteTemps : MonoBehaviour
     {   
         rayon = transform.localScale.x;
         dist = GetComponent<Shape>().GetShapeDistance(chaud.transform.position);
+
         if(dist < rayon){
             temps += Time.deltaTime;
             GetComponent<Shape>().conductivity = 10*(1.0f-Mathf.Exp(-GetComponent<Shape>().coef*temps));
@@ -38,6 +39,8 @@ public class ConductiviteTemps : MonoBehaviour
                 temps = 0.01f;
             }
         }
-        else {GetComponent<Shape>().conductivity = 1;}
+        else {
+            GetComponent<Shape>().conductivity = 1;
+            temps = 0.0f;}
     }
 }
