@@ -26,7 +26,7 @@ public class ConductiviteTemps : MonoBehaviour
 
         if(dist < rayon){
             temps += Time.deltaTime;
-            GetComponent<Shape>().conductivity = (float)(1e-27)*(1.0f-Mathf.Exp(-GetComponent<Shape>().coef*temps));
+            GetComponent<Shape>().T_temporel = (float)(1e-27)*(1.0f-Mathf.Exp(-GetComponent<Shape>().coef*temps));
             if (temps >15) {
                 var gameObject = new GameObject("Source_secondaire"+count);
                 count++;
@@ -40,7 +40,7 @@ public class ConductiviteTemps : MonoBehaviour
             }
         }
         else {
-            GetComponent<Shape>().conductivity = 0;
+            GetComponent<Shape>().T_temporel = 0;
             temps = 0.0f;}
     }
 }

@@ -1,4 +1,4 @@
-﻿#pragma kernel CSMain
+#pragma kernel CSMain
 
 Texture2D<float4> Source;
 RWTexture2D<float4> Destination;
@@ -22,8 +22,7 @@ struct Shape {
     int operation;
     float blendStrength;
     int numChildren;
-    float3 rotation;
-    float T_temporel;
+    float conductivity;
 };
 
 StructuredBuffer<Shape> shapes;
@@ -49,61 +48,12 @@ struct Ray {
     float3 direction;
 };
 
-float3 Tourne(float3 rot,float3 coor) {
-    return float3(coor.x*(cos_p(rot.y)*cos_p(rot.z)-sin_p(rot.y)*cos_p(rot.x)*sin_p(rot.z))-coor.y*(cos_p(rot.y)*sin_p(rot.z)+sin_p(rot.y)*cos_p(rot.z)*cos_p(rot.x))+coor.z*sin_p(rot.y)*sin_p(rot.x),
-    coor.x*(sin_p(rot.y)*cos_p(rot.z)+cos_p(rot.y)*cos_p(rot.x)*sin_p(rot.z))+coor.y*(-sin_p(rot.y)*sin_p(rot.z)+cos_p(rot.y)*cos_p(rot.z)*cos_p(rot.x))-coor.z*cos_p(rot.y)*sin_p(rot.x),
-    coor.x*sin_p(rot.x)*sin_p(rot.z)+coor.y*sin_p(rot.x)*cos_p(rot.z)+coor.z*cos_p(rot.x));
-}
-
-float3 TourneInv(float3 rot,float3 coor) {
-    return float3(coor.x*(cos_p(rot.z)*cos_p(rot.y)-sin_p(rot.z)*cos_p(rot.x)*sin_p(rot.y))+coor.y*(cos_p(rot.z)*sin_p(rot.y)+sin_p(rot.z)*cos_p(rot.y)*cos_p(rot.x))+coor.z*sin_p(rot.z)*sin_p(rot.x),
-    -coor.x*(sin_p(rot.z)*cos_p(rot.y)+cos_p(rot.z)*cos_p(rot.x)*sin_p(rot.y))+coor.y*(-sin_p(rot.z)*sin_p(rot.y)+cos_p(rot.z)*cos_p(rot.y)*cos_p(rot.x))+coor.z*cos_p(rot.z)*sin_p(rot.x),
-    coor.x*sin_p(rot.x)*sin_p(rot.y)-coor.y*sin_p(rot.x)*cos_p(rot.y)+coor.z*cos_p(rot.x));
-}
-
-float SphereDistance(float3 eye, float3 centre, float radius) {
-    return distance(eye, centre) - radius;
-}
-
  ///........................
-float CubeDistance(float3 eye, float3 centre, float3 size, float3 rot) {
-    float3 o = abs(Tourne(rot,eye-centre)) -size;
+float CubeDistance(float3 eye, float3 centre, float3 size) {
+    float3 o = abs(eye-centre) -size;
     float ud = length(max(o,0));
     float n = max(max(min(o.x,0),min(o.y,0)), min(o.z,0));
     return ud+n;
-}
-
-// Following distance functions from http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-float TorusDistance(float3 eye, float3 centre, float r1, float r2, float3 rot)
-{   float3 coor = Tourne(rot,eye-centre);
-    float2 q = float2(length(coor.xz)-r1,coor.y);
-    return length(q)-r2;
-}
-
-float PrismDistance(float3 eye, float3 centre, float3 h, float3 rot) {
-    float3 neye = Tourne(rot,eye-centre);
-    float3 q = abs(Tourne(rot,eye-centre));
-    return max(q.z-h.y,max(q.x*cos_p(h.z)+ neye.y*sin_p(h.z),- neye.y)-h.x*sin_p(h.z));
-}
-
-
-float CylinderDistance(float3 eye, float3 centre, float2 h, float3 rot) {
-    float3 neye = Tourne(rot,eye-centre);
-    float2 d = abs(float2(length((neye).xz), neye.y)) - h;
-    return length(max(d,0.0)) + max(min(d.x,0),min(d.y,0));
-}
-
-float ConeDistance(float3 eye, float3 centre, float3 h, float3 rot)
-{
-    float2 q = h.z * float2(h.x / h.y, -1.0);
-    float3 p = Tourne(rot,eye-centre);
-    float2 w = float2(sqrt(p.x * p.x + p.z * p.z), p.y);
-    float2 a = w - q * clamp(dot(w, q) / dot(q, q), 0.0, 1.0);
-    float2 b = w - q * float2(clamp(w.x / q.x, 0.0, 1.0), 1.0);
-    float k = sign(q.y);
-    float d = min(dot(a, a), dot(b, b));
-    float s = max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
-    return sqrt(d) * sign(s);
 }
 
 Ray CreateRay(float3 origin, float3 direction) {
@@ -169,50 +119,8 @@ float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB, int opera
 
 float GetShapeDistance(Shape shape, float3 eye) {
    
-    if (shape.shapeType == 0) {
-        return SphereDistance(eye, shape.position, shape.size.x);
-    }
-    else if (shape.shapeType == 1) {
-        return CubeDistance(eye, shape.position, shape.size, shape.rotation);
-    }
-    else if (shape.shapeType == 2) {
-        return TorusDistance(eye, shape.position, shape.size.x, shape.size.y, shape.rotation);
-    }
-    else if (shape.shapeType == 3) {
-        return PrismDistance(eye, shape.position, shape.size, shape.rotation);
-    }
-    else if (shape.shapeType == 4) {
-        return CylinderDistance(eye, shape.position, shape.size.xy, shape.rotation);
-    }
-    else if (shape.shapeType == 5) {
-        return ConeDistance(eye, shape.position, shape.size, shape.rotation);
-    }
-
-    return maxDst;
-}
-
-float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
-   
-    if (shape.shapeType == 0) {
-        return SphereDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size.x);
-    }
-    else if (shape.shapeType == 1) {
-        return CubeDistance(parent + Tourne(rot,eye-parent), shape.position, shape.size, shape.rotation);
-    }
-    else if (shape.shapeType == 2) {
-        return TorusDistance(parent + Tourne(rot,eye-parent) , shape.position, shape.size.x, shape.size.y, shape.rotation);
-    }
-    else if (shape.shapeType == 3) {
-        return PrismDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size, shape.rotation);
-    }
-    else if (shape.shapeType == 4) {
-        return CylinderDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size.xy, shape.rotation);
-    }
-    else if (shape.shapeType == 5) {
-        return ConeDistance(parent + Tourne(rot,eye - parent), shape.position, shape.size, shape.rotation);
-    }
-
-    return maxDst;
+    return CubeDistance(eye, shape.position, shape.size);
+    
 }
 
 float GetObjectDistance(int i, float3 eye, bool util) {
@@ -227,7 +135,7 @@ float GetObjectDistance(int i, float3 eye, bool util) {
 
         for (int j = 0; j < numChildren; j ++) {
             Shape childShape = shapes[i+j+1];
-            float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
+            float childDst = GetShapeDistance(childShape,eye);
             int ope = childShape.operation;
            if (ope == 4)  ope = (1-util) * ope;
         // modifier le combine pour qu'il renvoie l'indice du fils le plus proche
@@ -253,7 +161,7 @@ float4 SceneInfo(float3 eye) {
 
         for (int j = 0; j < numChildren; j ++) {
             Shape childShape = shapes[i+j+1];
-            float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
+            float childDst = GetShapeDistance(childShape,eye,shape.position);
 
             float4 combined = Combine(localDst, childDst, localColour, childShape.colour, childShape.operation, childShape.blendStrength);
             localColour = combined.xyz;
@@ -330,12 +238,11 @@ float2 solvewos(float3 p0) {
         float flag = 1;
         int iterations = 0;
         float tempe = 0.0000000001;
-        float couche_air = 0.1;
 
-        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,false) < couche_air  ) {
-            float internalRadius = abs(GetObjectDistance(0,p,false)-couche_air);
+        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,false) < 0.1  ) {
+            float internalRadius = abs(GetObjectDistance(0,p,false)-0.1);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
-            float phi = pi * random((walk*walk+1)*(shapes[0].T_temporel*shapes[0].T_temporel+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
+            float phi = pi * random((walk*walk+1)*(shapes[0].conductivity*shapes[0].conductivity+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));
             tempe = tempe * 1/(4*pi*(internalRadius+0.000000001)) * sqrsigma / sinh(sqrsigma*(internalRadius+0.000000001));
             iterations++;
@@ -378,7 +285,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float3 lightDir = (positionLight)?normalize(_Light-ray.origin):-_Light;
             float lighting = saturate(saturate(dot(normal,lightDir)));
             float3 col = sceneInfo.xyz;
-            float cond = sceneInfo.x * shapes[0].T_temporel / 1000000000;
+            float cond = sceneInfo.x * shapes[0].conductivity / 1000000000;
             
             // Shadow
             float3 offsetPos = pointOnSurface + normal * shadowBias;

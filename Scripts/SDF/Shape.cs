@@ -40,7 +40,7 @@ public class Shape : MonoBehaviour
         }
     }
 
-    public float conductivity;
+    public float T_temporel;
 
     public float coef;
 

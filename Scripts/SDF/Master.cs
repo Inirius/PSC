@@ -49,7 +49,7 @@ public class Master : MonoBehaviour {
             if (allShapes[i].transform.parent == null) {
 
                 Transform parentShape = allShapes[i].transform;
-                if (parentShape.name == "Four") {
+                if (parentShape.name == "Barre") {
                     orderedShapes.Insert(0,allShapes[i]);
                 }
                 else {orderedShapes.Add (allShapes[i]);}
@@ -57,7 +57,7 @@ public class Master : MonoBehaviour {
                 // Add all children of the shape (nested children not supported currently)
                 for (int j = 0; j < parentShape.childCount; j++) {
                     if (parentShape.GetChild (j).GetComponent<Shape> () != null) {
-                        if (parentShape.name == "Four") {
+                        if (parentShape.name == "Barre") {
                             orderedShapes.Insert(j+1,parentShape.GetChild (j).GetComponent<Shape> ());
                             orderedShapes[j+1].numChildren = 0;
                         }
@@ -84,7 +84,7 @@ public class Master : MonoBehaviour {
                 blendStrength = s.blendStrength*3,
                 numChildren = s.numChildren,
                 rotation = s.rotation,
-                conductivity = s.conductivity
+                T_temporel = s.T_temporel
             };
         }
 
@@ -124,7 +124,7 @@ public class Master : MonoBehaviour {
         public float blendStrength;
         public int numChildren;
         public Vector3 rotation;
-        public float conductivity;
+        public float T_temporel;
 
         public static int GetSize () {
             return sizeof (float) * 14 + sizeof (int) * 3;
