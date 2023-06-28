@@ -163,6 +163,15 @@ float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB, int opera
             colour = colourB;
         }
     }
+    // Hide : nothing
+    // Show : Mask, but only visually
+    else if (operation == 5) {
+        // max(a,b)
+        if (dstB > dst) {
+            dst = dstB;
+            colour = colourB;
+        }
+    }
 
     return float4(colour,dst);
 }
@@ -218,7 +227,7 @@ float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
 float GetObjectDistance(int i, float3 eye, bool util) {
     // eye : position du point
     // i : index de l'objet
-    // util : considérer les objets cachés 
+    // util : considérer les objets cachés
 
         Shape shape = shapes[i];
         int numChildren = shape.numChildren;
@@ -230,6 +239,7 @@ float GetObjectDistance(int i, float3 eye, bool util) {
             float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
             int ope = childShape.operation;
            if (ope == 4)  ope = (1-util) * ope;
+           if (ope == 5) ope = 4 * (1-util) + util * 3;
         // modifier le combine pour qu'il renvoie l'indice du fils le plus proche
             float4 combined = Combine(localDst, childDst, shape.colour, childShape.colour, ope, childShape.blendStrength);
             localDst = combined.w;
@@ -332,8 +342,8 @@ float2 solvewos(float3 p0) {
         float tempe = 0.0000000001;
         float couche_air = 0.1;
 
-        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,false) < couche_air  ) {
-            float internalRadius = abs(GetObjectDistance(0,p,false)-couche_air);
+        while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,true) < couche_air  ) {
+            float internalRadius = abs(GetObjectDistance(0,p,true)-couche_air);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
             float phi = pi * random((walk*walk+1)*(shapes[0].T_temporel*shapes[0].T_temporel+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));

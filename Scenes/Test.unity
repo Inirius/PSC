@@ -157,7 +157,7 @@ MonoBehaviour:
   colour: {r: 0.9433962, g: 0.04883451, b: 0.031149892, a: 1}
   blendStrength: 0
   numChildren: 0
-  conductivity: 0
+  T_temporel: 0
   coef: 0
 --- !u!4 &879256193
 Transform:
@@ -223,7 +223,7 @@ MonoBehaviour:
   colour: {r: 1, g: 0.39215687, b: 0.39215687, a: 1}
   blendStrength: 0
   numChildren: 0
-  conductivity: 100
+  T_temporel: 0
   coef: 0
 --- !u!1 &1393592508
 GameObject:
@@ -457,7 +457,7 @@ GameObject:
   - component: {fileID: 2128685394}
   - component: {fileID: 2128685395}
   m_Layer: 0
-  m_Name: Four
+  m_Name: Barre
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -480,7 +480,7 @@ MonoBehaviour:
   colour: {r: 0.003921569, g: 0.003921569, b: 0, a: 1}
   blendStrength: 0
   numChildren: 1
-  conductivity: 10
+  T_temporel: 2.99751e-27
   coef: 0.05
 --- !u!4 &2128685393
 Transform:
@@ -490,7 +490,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2128685390}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.097, y: -0.62, z: -0.011}
+  m_LocalPosition: {x: 8.012, y: -0.62, z: -0.011}
   m_LocalScale: {x: 1, y: 0.2, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
