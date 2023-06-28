@@ -35,7 +35,7 @@ public class ObjectMove : MonoBehaviour
 
     if(chosen == number) {
 
-        if(Input.GetKey("z")){
+        if(Input.GetKey("w")){
             transform.position = transform.position + new Vector3(1,0,0)*2*Time.deltaTime;
         }
 
@@ -43,7 +43,7 @@ public class ObjectMove : MonoBehaviour
             transform.position = transform.position - new Vector3(1,0,0)*2*Time.deltaTime;
         }
 
-        if(Input.GetKey("q")){
+        if(Input.GetKey("a")){
             transform.position = transform.position + new Vector3(0,0,1)*2*Time.deltaTime;
         }
 
@@ -51,29 +51,17 @@ public class ObjectMove : MonoBehaviour
             transform.position = transform.position - new Vector3(0,0,1)*2*Time.deltaTime;
         }
 
-        if(Input.GetKey("r")){
-            transform.eulerAngles = transform.eulerAngles + new Vector3(0,0,1)*Time.deltaTime;
-        }
+        //if(Input.GetKey("r")){ transform.eulerAngles = transform.eulerAngles + new Vector3(0,0,1)*Time.deltaTime;}
 
-        if(Input.GetKey("t")){
-            transform.eulerAngles = transform.eulerAngles - new Vector3(0,0,1)*Time.deltaTime;
-        }
+        //if(Input.GetKey("t")){            transform.eulerAngles = transform.eulerAngles - new Vector3(0,0,1)*Time.deltaTime;        }
 
-        if(Input.GetKey("f")){
-            transform.eulerAngles = transform.eulerAngles + new Vector3(0,1,0)*Time.deltaTime;
-        }
+        //if(Input.GetKey("f")){            transform.eulerAngles = transform.eulerAngles + new Vector3(0,1,0)*Time.deltaTime;        }
 
-        if(Input.GetKey("g")){
-            transform.eulerAngles = transform.eulerAngles - new Vector3(0,1,0)*Time.deltaTime;
-        }
+        //if(Input.GetKey("g")){            transform.eulerAngles = transform.eulerAngles - new Vector3(0,1,0)*Time.deltaTime;        }
 
-        if(Input.GetKey("v")){
-            transform.eulerAngles = transform.eulerAngles + new Vector3(1,0,0)*Time.deltaTime;
-        }
+        //if(Input.GetKey("v")){            transform.eulerAngles = transform.eulerAngles + new Vector3(1,0,0)*Time.deltaTime;        }
 
-        if(Input.GetKey("b")){
-            transform.eulerAngles = transform.eulerAngles - new Vector3(1,0,0)*Time.deltaTime;
-        }
+        //if(Input.GetKey("b")){            transform.eulerAngles = transform.eulerAngles - new Vector3(1,0,0)*Time.deltaTime;        }
     }
 }
 }

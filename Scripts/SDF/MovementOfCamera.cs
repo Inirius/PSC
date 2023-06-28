@@ -59,8 +59,7 @@ public class MovementOfCamera : MonoBehaviour
 
         // Substract forward vector of the GameObject to point its forward vector to the target
         transform.position = _target.position - transform.forward * _distanceFromTarget;
-        print(_rotationY);
-        print(_rotationX);
+        
         float r2 = _rotationY*pi/180;
         float r1 = _rotationX*pi/180;
         float cos_a = Mathf.Cos(r1);

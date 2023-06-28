@@ -6,72 +6,52 @@ using static Shape;
 public class movement : MonoBehaviour
 {
     // Start is called before the first frame update
-    [SerializeField]
-    private float _mouseSensitivity = 3.0f;
+   
+    bool show = false;
 
-    private float _rotationY;
-    private float _rotationX;
-
-    [SerializeField]
-    private Transform _target;
-
-    [SerializeField]
-    private float _distanceFromTarget = 3.0f;
-
-    private Vector3 _currentRotation;
-    private Vector3 _smoothVelocity = Vector3.zero;
-
-    [SerializeField]
-    private float _smoothTime = 0.2f;
-
-    [SerializeField]
-    private Vector2 _rotationXMinMax = new Vector2(-40, 40);
-
-    [SerializeField]
-    private float velocityOfCamera =10;
-
-    float pi = 3.1415926535F;
-
-    int count =0;
-    
-
-    // Update is called once per frame
-    void Update()
+    void Start()
     {
-        float mouseX = Input.GetAxis("Mouse X") * _mouseSensitivity;
-        float mouseY = -Input.GetAxis("Mouse Y") * _mouseSensitivity;
-
-        _rotationY += mouseX;
-        _rotationX += mouseY;
-
-        // Apply clamping for x rotation 
-        _rotationX = Mathf.Clamp(_rotationX, _rotationXMinMax.x, _rotationXMinMax.y);
-
-        Vector3 nextRotation = new Vector3(_rotationX, _rotationY);
-
-        // Apply damping between rotation changes
-        _currentRotation = Vector3.SmoothDamp(_currentRotation, nextRotation, ref _smoothVelocity, _smoothTime);
-        transform.localEulerAngles = _currentRotation;
-
-        // Substract forward vector of the GameObject to point its forward vector to the target
-        transform.position = _target.position - transform.forward * _distanceFromTarget;
-        print(_rotationY);
-        print(_rotationX);
-        float r2 = _rotationY*pi/180;
-        float r1 = _rotationX*pi/180;
-
-        if(Input.GetKey("mouse 1")){
-            var gameObject = new GameObject("Trou"+count);
-            count++;
-            gameObject.AddComponent<Shape>();
-            gameObject.transform.parent = GameObject.Find("Bac").transform;
-            gameObject.GetComponent<Shape>().shapeType = ShapeType.Cylinder;
-            gameObject.transform.position = transform.position + new Vector3(Mathf.Sin(r2),-Mathf.Sin(r1),Mathf.Cos(r2)) *3;
-            gameObject.transform.rotation = transform.rotation;
-            gameObject.GetComponent<Shape>().operation = Operation.Cut;
-            
-                  }
         
-    
     }
+    
+    void Update()
+    {     
+        if(Input.GetKey(KeyCode.Return)){
+            if (! show) {
+                GetComponent<Shape>().operation = Operation.None;
+                show = true;
+            }
+            else {
+                GetComponent<Shape>().operation = Operation.Show;
+                show = false;
+            }
+                
+        }              
+        
+        if(Input.GetKey("o")){
+            transform.position = transform.position + new Vector3(1,0,0)*2*Time.deltaTime;
+        }
+
+        if(Input.GetKey("l")){
+            transform.position = transform.position - new Vector3(1,0,0)*2*Time.deltaTime;
+        }
+
+        if(Input.GetKey("k")){
+            transform.position = transform.position + new Vector3(0,0,1)*2*Time.deltaTime;
+        }
+
+        if(Input.GetKey(";")){
+            transform.position = transform.position - new Vector3(0,0,1)*2*Time.deltaTime;
+        }
+
+        if(Input.GetKey("i")){
+            transform.position = transform.position + new Vector3(0,1,0)*2*Time.deltaTime;
+        }
+
+        if(Input.GetKey("p")){
+            transform.position = transform.position - new Vector3(0,1,0)*2*Time.deltaTime;
+        }
+        
+    }
+
 }

@@ -169,7 +169,6 @@ float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB, int opera
         // max(a,b)
         if (dstB > dst) {
             dst = dstB;
-            colour = colourB;
         }
     }
 
@@ -239,7 +238,7 @@ float GetObjectDistance(int i, float3 eye, bool util) {
             float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
             int ope = childShape.operation;
            if (ope == 4)  ope = (1-util) * ope;
-           if (ope == 5) ope = 4 * (1-util) + util * 3;
+           if (ope == 5) ope = 4 * util + (1-util) * 3;
         // modifier le combine pour qu'il renvoie l'indice du fils le plus proche
             float4 combined = Combine(localDst, childDst, shape.colour, childShape.colour, ope, childShape.blendStrength);
             localDst = combined.w;
