@@ -312,6 +312,7 @@ float _Radius = 10000;
 float _Hot = 10;
 float _Cold = 0;
 float _Accuracy = 3;
+float pi = 3.1415926;
 
 
 float distance_chaud(float3 position) {
@@ -325,41 +326,36 @@ float random(float2 x)
 {
     return frac(sin_p(dot(x,float2(12.9898,78.233)))*43758.5453123);
 }
-float2 solvewos(float3 p0) {
+float solvewos(float3 p0, int walkSamples) {
     //if (distance_chaud(p0)<0) return float2(1,0);
     float epsilon = 0.005;
     float sum = 0;
-    float sum1 = 0;
-    int walkSamples = 10;
-    float pi = 3.1415926;
-    float sqrsigma = 1.0;
+      
 
     for (int walk = 0; walk < walkSamples; walk++) {
         float3 p = p0;
-        float flag = 1;
+        
         int iterations = 0;
-        float tempe = 0.0000000001;
-        float couche_air = 0.1;
+        
+        float couche_air = 0;
 
         while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,true) < couche_air  ) {
             float internalRadius = abs(GetObjectDistance(0,p,true)-couche_air);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
             float phi = pi * random((walk*walk+1)*(shapes[0].T_temporel*shapes[0].T_temporel+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));
-            tempe = tempe * 1/(4*pi*(internalRadius+0.000000001)) * sqrsigma / sinh(sqrsigma*(internalRadius+0.000000001));
+            
             iterations++;
         }
 
         if (distance_chaud(p) <= epsilon) {
-            tempe = tempe * 1;
-            sum += 1000;
+         
+            sum += 1;
         }
-        else {
-            tempe = 0;
-        }
-        sum1 += tempe;
+       
+        
     }
-    return float2(sum/walkSamples , sum1/walkSamples);
+    return sum/walkSamples;
 }
 
 [numthreads(8,8,1)]
@@ -387,7 +383,16 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float3 lightDir = (positionLight)?normalize(_Light-ray.origin):-_Light;
             float lighting = saturate(saturate(dot(normal,lightDir)));
             float3 col = sceneInfo.xyz;
-            float cond = sceneInfo.x * shapes[0].T_temporel / 1000000000;
+            float temps = shapes[0].T_temporel;
+            float x_dim = shapes[0].size.x;
+            float y_dim = shapes[0].size.y;
+            float z_dim = shapes[0].size.z;
+            float3 p_0 = shapes[0].position;
+
+            // MEF alpha à mettre dans le shape 
+            float alpha = 0.2;
+            int i_MAX = 2;
+            int samples = 3;
             
             // Shadow
             float3 offsetPos = pointOnSurface + normal * shadowBias;
@@ -399,16 +404,37 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float dstToLight = (positionLight)?distance(offsetPos,_Light):maxDst;
             float shadow = CalculateShadow(ray, dstToLight);
 
-            float2 wos;
+            float tempe = 0;
+            float x = 0;
+            float y = 0;
+            float z = 0;
+            
 
             if (GetObjectDistance(0,pointOnSurface,false)<0.001) {
-                wos = solvewos(pointOnSurface);
-            }
-            else {
-                wos = float2(0,0);
-            }
+                float3 p_c = pointOnSurface - p_0; // position du point relativement au centre
+                tempe = solvewos(pointOnSurface,10);
+                for (int m = 1; m< 1+i_MAX; m++) {
+                    for (int n = 1; n<1+i_MAX; n++) {
+                        for (int l = 1; l<1+i_MAX; l++) {
+                            float coeff = 0;
+                            
+                            for (int k = 0; k<samples;k++) {
+                                float3 p = p_0;
+                                x = (2*random((m*temps*temps+1)* (k*k+1) * float2(n*z*z+1,l*y*y+1))-1);
+                                y = (2*random((l*temps*temps+1) *(m*m+1)* float2(n*x*x+1,k*z*z+1))-1);
+                                z = (2*random((n*temps*temps+1) *(l*l+1)* float2(n*y*y+1,m*x*x+1))-1);
+                                p += float3(x*x_dim ,y*y_dim ,z*z_dim);
+                                coeff -= 8 * solvewos(p,3) * sin(m*pi*x) * sin(n*pi*y) * sin(l*pi*z);
+                            }
 
-            Destination[id.xy] = float4(col * lighting * shadow,1) + (wos.x + cond  * wos.y / 1000000) * float4(0.001,0,0,1);
+                            tempe += coeff/samples * sin(m*pi*p_c.x/x_dim) * sin(n*pi*p_c.y/y_dim) * sin(l*pi*p_c.z/z_dim) * exp( - alpha * temps * pi*pi*((m/(2*x_dim))*(m/(2*x_dim))+(n/(2*y_dim))*(n/(2*y_dim))+(l/(2*z_dim))*(l/(2*z_dim))));
+
+                        }
+                    }
+                }
+            }
+            
+            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * float4(1,0,0,0);
 
             break;
         }

@@ -306,6 +306,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 wos = float2(0,0);
             }
 
+            float2 (x,y) = float2 (1,2);
+
             Destination[id.xy] = float4(col * lighting * shadow,1) + (wos.x + cond  * wos.y / 1000000) * float4(0.001,0,0,1);
 
             break;
