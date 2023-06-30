@@ -312,7 +312,7 @@ float _Radius = 10000;
 float _Hot = 10;
 float _Cold = 0;
 float _Accuracy = 3;
-
+float pi = 3.1415926;
 
 float distance_chaud(float3 position) {
     
@@ -325,36 +325,41 @@ float random(float2 x)
 {
     return frac(sin_p(dot(x,float2(12.9898,78.233)))*43758.5453123);
 }
-float solvewos(float3 p0, int walkSamples) {
-    
+float2 solvewos(float3 p0) {
+    //if (distance_chaud(p0)<0) return float2(1,0);
     float epsilon = 0.005;
     float sum = 0;
-      
+    
+    int walkSamples = 10;
+    float pi = 3.1415926;
+    float sqrsigma = 1.0;
 
     for (int walk = 0; walk < walkSamples; walk++) {
         float3 p = p0;
-        
+        float flag = 1;
         int iterations = 0;
-        
-        float couche_air = 0;
+        float tempe = 0.0000000001;
+        float couche_air = 0.1;
 
         while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,true) < couche_air  ) {
             float internalRadius = abs(GetObjectDistance(0,p,true)-couche_air);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
-            float phi = pi * random((walk*walk+1)*(shapes[0].T_temporel*shapes[0].T_temporel+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
+            float phi = pi * random((walk*walk+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));
             
             iterations++;
         }
 
         if (distance_chaud(p) <= epsilon) {
-         
-            sum += 1;
+            tempe = tempe * 1;
+            sum += 1000;
         }
-       
+        else {
+            tempe = 0;
+        }
         
     }
-    return sum/walkSamples;
+    return float2(sum/walkSamples , 0);
 }
 
 [numthreads(8,8,1)]
@@ -394,14 +399,16 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float dstToLight = (positionLight)?distance(offsetPos,_Light):maxDst;
             float shadow = CalculateShadow(ray, dstToLight);
 
-            float wos;
+            float2 wos;
 
             if (GetObjectDistance(0,pointOnSurface,false)<0.001) {
-                wos = solvewos(pointOnSurface, 10);
+                wos = solvewos(pointOnSurface);
             }
-            
+            else {
+                wos = float2(0,0);
+            }
 
-            Destination[id.xy] = float4(col * lighting * shadow,1) + (wos) * float4(1,0,0,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + (wos.x + cond  * wos.y / 1000000) * float4(0.001,0,0,1);
 
             break;
         }
