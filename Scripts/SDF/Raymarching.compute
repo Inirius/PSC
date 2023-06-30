@@ -390,7 +390,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float3 p_0 = shapes[0].position;
 
             // MEF alpha à mettre dans le shape 
-            float alpha = 0.02;
+            float alpha = 0.002;
             int i_MAX = 2;
             int samples = 3;
             float pi = 3.1415926;
@@ -425,7 +425,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                                 y = (2*random((l*temps*temps+1) *(m*m+1)* float2(n*x*x+1,k*z*z+1))-1);
                                 z = (2*random((n*temps*temps+1) *(l*l+1)* float2(n*y*y+1,m*x*x+1))-1);
                                 p += float3(x*x_dim ,y*y_dim ,z*z_dim);
-                                coeff += 8 * solvewos(p,3) * sin(m*pi*x) * sin(n*pi*y) * sin(l*pi*z);
+                                coeff -= 8 * solvewos(p,3) * sin(m*pi*x) * sin(n*pi*y) * sin(l*pi*z);
                             }
 
                             tempe += coeff/samples * sin(m*pi*p_c.x/x_dim) * sin(n*pi*p_c.y/y_dim) * sin(l*pi*p_c.z/z_dim) * exp( - alpha * temps * pi*pi*((m/(2*x_dim))*(m/(2*x_dim))+(n/(2*y_dim))*(n/(2*y_dim))+(l/(2*z_dim))*(l/(2*z_dim))));
