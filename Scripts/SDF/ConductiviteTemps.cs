@@ -26,21 +26,21 @@ public class ConductiviteTemps : MonoBehaviour
 
         if(dist < rayon){
             temps += Time.deltaTime;
-            GetComponent<Shape>().T_temporel = (float)(1e-27)*(1.0f-Mathf.Exp(-GetComponent<Shape>().coef*temps));
-            if (temps >15) {
-                var gameObject = new GameObject("Source_secondaire"+count);
-                count++;
-                gameObject.AddComponent<Shape>();
-                gameObject.transform.parent = chaud.transform;
-                gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
-                gameObject.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
-                gameObject.transform.position = chaud.transform.position + count/15.0f * (transform.position - chaud.transform.position);
-                gameObject.GetComponent<Shape>().operation = Operation.Hide;
-                temps = 0.01f;
-            }
+            GetComponent<Shape>().T_temporel = temps;
+            //if (temps >15) {
+              //  var gameObject = new GameObject("Source_secondaire"+count);
+                //count++;
+         //       gameObject.AddComponent<Shape>();
+           //     gameObject.transform.parent = chaud.transform;
+             //   gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
+               // gameObject.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
+           //     gameObject.transform.position = chaud.transform.position + count/15.0f * (transform.position - chaud.transform.position);
+             //   gameObject.GetComponent<Shape>().operation = Operation.Hide;
+               // temps = 0.01f;            }
         }
         else {
             GetComponent<Shape>().T_temporel = 0;
-            temps = 0.0f;}
+            temps = 0.0f;
+            }
     }
 }
