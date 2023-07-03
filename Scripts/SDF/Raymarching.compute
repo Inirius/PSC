@@ -382,7 +382,12 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float3 lightDir = (positionLight)?normalize(_Light-ray.origin):-_Light;
             float lighting = saturate(saturate(dot(normal,lightDir)));
             float3 col = sceneInfo.xyz;
-            float temps = shapes[0].T_temporel;
+
+            //Changer le 0 avec le bon coefficient (scene info ?)
+            float temps = shapes[0].T_temporel; // MEF C'est alpha*t pas simlpement t
+            float x_dim = shapes[0].size.x;
+            float y_dim = shapes[0].size.y;
+            float z_dim = shapes[0].size.z;
             
             int i_MAX = 0;
             int samples = 3;
@@ -402,10 +407,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             
             if (GetObjectDistance(0,pointOnSurface,false)<0.001) {
                 tempe = solvewos(pointOnSurface,10);
-                
             }
             
-            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * float4(1,0,0,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * (1-exp(- temps * pi * pi / 4 * ( 1/(x_dim*x_dim) + 1/(y_dim*y_dim)))) * float4(1,0,0,0);
 
             break;
         }
