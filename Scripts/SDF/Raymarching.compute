@@ -383,14 +383,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float lighting = saturate(saturate(dot(normal,lightDir)));
             float3 col = sceneInfo.xyz;
             float temps = shapes[0].T_temporel;
-            float x_dim = shapes[0].size.x;
-            float y_dim = shapes[0].size.y;
-            float z_dim = shapes[0].size.z;
-            float3 p_0 = shapes[0].position;
-
-            // MEF alpha à mettre dans le shape 
-            float alpha = 0.002;
-            int i_MAX = 2;
+            
+            int i_MAX = 0;
             int samples = 3;
             float pi = 3.1415926;
 
@@ -405,33 +399,10 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float shadow = CalculateShadow(ray, dstToLight);
 
             float tempe = 0;
-            float x = 0;
-            float y = 0;
-            float z = 0;
             
-
             if (GetObjectDistance(0,pointOnSurface,false)<0.001) {
-                float3 p_c = pointOnSurface - p_0; // position du point relativement au centre
                 tempe = solvewos(pointOnSurface,10);
-                for (int m = 1; m< 1+i_MAX; m++) {
-                    for (int n = 1; n<1+i_MAX; n++) {
-                        for (int l = 1; l<1+i_MAX; l++) {
-                            float coeff = 0;
-                            
-                            for (int k = 0; k<samples;k++) {
-                                float3 p = p_0;
-                                x = (2*random((m*temps*temps+1)* (k*k+1) * float2(n*z*z+1,l*y*y+1))-1);
-                                y = (2*random((l*temps*temps+1) *(m*m+1)* float2(n*x*x+1,k*z*z+1))-1);
-                                z = (2*random((n*temps*temps+1) *(l*l+1)* float2(n*y*y+1,m*x*x+1))-1);
-                                p += float3(x*x_dim ,y*y_dim ,z*z_dim);
-                                coeff -= 8 * solvewos(p,3) * sin(m*pi*x) * sin(n*pi*y) * sin(l*pi*z);
-                            }
-
-                            tempe += coeff/samples * sin(m*pi*p_c.x/x_dim) * sin(n*pi*p_c.y/y_dim) * sin(l*pi*p_c.z/z_dim) * exp( - alpha * temps * pi*pi*((m/(2*x_dim))*(m/(2*x_dim))+(n/(2*y_dim))*(n/(2*y_dim))+(l/(2*z_dim))*(l/(2*z_dim))));
-
-                        }
-                    }
-                }
+                
             }
             
             Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * float4(1,0,0,0);

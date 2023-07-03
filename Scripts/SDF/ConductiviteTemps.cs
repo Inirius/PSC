@@ -26,7 +26,7 @@ public class ConductiviteTemps : MonoBehaviour
 
         if(dist < rayon){
             temps += Time.deltaTime;
-            GetComponent<Shape>().T_temporel = temps;
+            GetComponent<Shape>().T_temporel = temps * GetComponent<Shape>().coef;
             //if (temps >15) {
               //  var gameObject = new GameObject("Source_secondaire"+count);
                 //count++;
