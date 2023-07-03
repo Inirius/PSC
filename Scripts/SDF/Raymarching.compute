@@ -409,7 +409,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 tempe = solvewos(pointOnSurface,10);
             }
             
-            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * (1-exp(- temps * pi * pi / 4 * ( 1/(x_dim*x_dim) + 1/(y_dim*y_dim)))) * float4(1,0,0,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * (1-exp(- temps * pi * pi / 4 * ( 1/(x_dim*x_dim) + 1/(y_dim*y_dim) + 1/(z_dim*z_dim)))) * float4(1,0,0,0);
 
             break;
         }
