@@ -391,8 +391,8 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             // MEF alpha à mettre dans le shape 
             float alpha = 0.002;
-            int i_MAX = 2;
-            int samples = 3;
+            int i_MAX = 3;
+            int samples = 5;
             float pi = 3.1415926;
 
             // Shadow
@@ -419,7 +419,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                         for (int l = 1; l<1+i_MAX; l++) {
                             float coeff = 0;
                             
-                            for (int k = 0; k<samples;k++) {
+                            for (int k = 0; k<(10-(m+n+l));k++) {
                                 float3 p = p_0;
                                 x = (2*random((m*temps*temps+1)* (k*k+1) * float2(n*z*z+1,l*y*y+1))-1);
                                 y = (2*random((l*temps*temps+1) *(m*m+1)* float2(n*x*x+1,k*z*z+1))-1);

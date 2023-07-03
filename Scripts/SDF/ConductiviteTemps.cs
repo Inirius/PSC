@@ -6,7 +6,7 @@ using static Shape;
 public class ConductiviteTemps : MonoBehaviour
 {
     Vector3 centre = new Vector3(10,0,0);
-    float rayon = 0.0f;
+    float rayon ;
     float temps = 0.0f;
     int count =0;
     public float dist = 0.0f;
@@ -16,6 +16,7 @@ public class ConductiviteTemps : MonoBehaviour
     void Start()
     {
         chaud = GameObject.Find("Corps chaud");
+        rayon = 1.15f;
     }
 
     // Update is called once per frame

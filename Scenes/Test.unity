@@ -200,7 +200,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1335074936}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.2159996, y: 0.36000013, z: 0.961}
+  m_LocalPosition: {x: 0.282, y: -0.15, z: 0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -220,11 +220,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   shapeType: 1
-  operation: 0
+  operation: 5
   colour: {r: 1, g: 0.39215687, b: 0.39215687, a: 1}
   blendStrength: 0
   numChildren: 0
-  T_temporel: 0
+  T_temporel: 100
   coef: 0
 --- !u!114 &1335074939
 MonoBehaviour:
@@ -491,10 +491,10 @@ MonoBehaviour:
   shapeType: 1
   operation: 0
   colour: {r: 0.003921569, g: 0.003921569, b: 0, a: 1}
-  blendStrength: 0
+  blendStrength: 0.374
   numChildren: 1
-  T_temporel: 2.99751e-27
-  coef: 0.05
+  T_temporel: 1
+  coef: 0.5
 --- !u!4 &2128685393
 Transform:
   m_ObjectHideFlags: 0
@@ -503,7 +503,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2128685390}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.012, y: -0.62, z: -0.011}
+  m_LocalPosition: {x: 8.017, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 0.2, z: 0.5}
   m_ConstrainProportionsScale: 0
   m_Children:
