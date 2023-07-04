@@ -21,22 +21,13 @@ public class ConductiviteTemps : MonoBehaviour
     // Update is called once per frame
     void Update()
     {   
-        rayon = transform.localScale.x;
+        rayon = max(transform.localScale);
         dist = GetComponent<Shape>().GetShapeDistance(chaud.transform.position);
 
         if(dist < rayon){
             temps += Time.deltaTime;
             GetComponent<Shape>().T_temporel = temps * GetComponent<Shape>().coef;
-            //if (temps >15) {
-              //  var gameObject = new GameObject("Source_secondaire"+count);
-                //count++;
-         //       gameObject.AddComponent<Shape>();
-           //     gameObject.transform.parent = chaud.transform;
-             //   gameObject.GetComponent<Shape>().shapeType = ShapeType.Cube;
-               // gameObject.transform.localScale = new Vector3(1.0f,1.0f,1.0f);
-           //     gameObject.transform.position = chaud.transform.position + count/15.0f * (transform.position - chaud.transform.position);
-             //   gameObject.GetComponent<Shape>().operation = Operation.Hide;
-               // temps = 0.01f;            }
+            
         }
         else {
             GetComponent<Shape>().T_temporel = 0;
