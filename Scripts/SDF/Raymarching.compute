@@ -9,7 +9,7 @@ float4x4 _CameraInverseProjection;
 float3 _Light;
 bool positionLight;
 
-static const float maxDst = 80;
+static const float maxDst = 800;
 static const float epsilon = 0.001f;
 static const float shadowBias = epsilon * 50;
 
@@ -48,6 +48,22 @@ struct Ray {
     float3 origin;
     float3 direction;
 };
+
+struct Combined {
+    float dst;
+    float3 colour;
+    float T_temporel;
+    int object;
+};
+
+Combined CreateCombined(float dst, float3 colour, float T_temporel, int object) {
+    Combined combined;
+    combined.dst = dst;
+    combined.colour = colour;
+    combined.T_temporel = T_temporel;
+    combined.object = object;
+    return combined;
+}
 
 float3 Tourne(float3 rot,float3 coor) {
     return float3(coor.x*(cos_p(rot.y)*cos_p(rot.z)-sin_p(rot.y)*cos_p(rot.x)*sin_p(rot.z))-coor.y*(cos_p(rot.y)*sin_p(rot.z)+sin_p(rot.y)*cos_p(rot.z)*cos_p(rot.x))+coor.z*sin_p(rot.y)*sin_p(rot.x),
@@ -123,29 +139,38 @@ Ray CreateCameraRay(float2 uv) {
 
 // polynomial smooth min (k = 0.1);
 // from https://www.iquilezles.org/www/articles/smin/smin.htm
-float4 Blend( float a, float b, float3 colA, float3 colB, float k )
+Combined Blend( float a, float b, float3 colA, float3 colB, float k, float T_temporelA, float T_temporelB)
 {
     float h = clamp( 0.5+0.5*(b-a)/k, 0.0, 1.0 );
     float blendDst = lerp( b, a, h ) - k*h*(1.0-h);
     float3 blendCol = lerp(colB,colA,h);
-    return float4(blendCol, blendDst);
+    float blendT_temporel = lerp(T_temporelB,T_temporelA,h);
+    int blendObject = (h > 0.5)?1:0;
+    return CreateCombined(blendDst,blendCol,blendT_temporel,blendObject);
 }
 
-float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB, int operation, float blendStrength) {
+Combined Combine(float dstA, float dstB, float3 colourA, float3 colourB, int operation, float blendStrength, float T_temporelA, float T_temporelB, int a, int b) {
     float dst = dstA;
     float3 colour = colourA;
+    float T_temporel = T_temporelA;
+    int k = a;
 
     if (operation == 0) {
         if (dstB < dstA) {
             dst = dstB;
             colour = colourB;
+            T_temporel = T_temporelB;
+            k = b;
         }
     } 
     // Blend
     else if (operation == 1) {
-        float4 blend = Blend(dstA,dstB,colourA,colourB, blendStrength);
-        dst = blend.w;
-        colour = blend.xyz;
+        Combined blend = Blend(dstA,dstB,colourA,colourB, blendStrength, T_temporelA, T_temporelB);
+        dst = blend.dst;
+        colour = blend.colour;
+        T_temporel = blend.T_temporel;
+        k = (blend.object==1)?b:a;
+
     }
     // Cut
     else if (operation == 2) {
@@ -153,6 +178,8 @@ float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB, int opera
         if (-dstB > dst) {
             dst = -dstB;
             colour = colourB;
+            T_temporel = T_temporelB;
+            k = b;
         }
     }
     // Mask
@@ -161,6 +188,8 @@ float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB, int opera
         if (dstB > dst) {
             dst = dstB;
             colour = colourB;
+            T_temporel = T_temporelB;
+            k = b;
         }
     }
     // Hide : nothing
@@ -169,10 +198,10 @@ float4 Combine(float dstA, float dstB, float3 colourA, float3 colourB, int opera
         // max(a,b)
         if (dstB > dst) {
             dst = dstB;
-        }
+            }
     }
 
-    return float4(colour,dst);
+    return CreateCombined(dst,colour,T_temporel,k);
 }
 
 float GetShapeDistance(Shape shape, float3 eye) {
@@ -240,17 +269,19 @@ float GetObjectDistance(int i, float3 eye, bool util) {
            if (ope == 4)  ope = (1-util) * ope;
            if (ope == 5) ope = 4 * util + (1-util) * 3;
         // modifier le combine pour qu'il renvoie l'indice du fils le plus proche
-            float4 combined = Combine(localDst, childDst, shape.colour, childShape.colour, ope, childShape.blendStrength);
-            localDst = combined.w;
+            Combined combined = Combine(localDst, childDst, shape.colour, childShape.colour, ope, childShape.blendStrength,0,0,0,0);
+            localDst = combined.dst;
         }
         
     return localDst;
 }
 
 
-float4 SceneInfo(float3 eye) {
+Combined SceneInfo(float3 eye) {
     float globalDst = maxDst;
     float3 globalColour = 1;
+    float globalT_temporel = 0;
+    int globalIndex = -1;
     
     for (int i = 0; i < numShapes; i ++) {
         Shape shape = shapes[i];
@@ -258,30 +289,36 @@ float4 SceneInfo(float3 eye) {
 
         float localDst = GetShapeDistance(shape,eye);
         float3 localColour = shape.colour;
+        float localT_temporel = shape.T_temporel;
+        int localIndex = i;
 
 
         for (int j = 0; j < numChildren; j ++) {
             Shape childShape = shapes[i+j+1];
             float childDst = GetShapeDistance(childShape,eye,shape.position,shape.rotation);
 
-            float4 combined = Combine(localDst, childDst, localColour, childShape.colour, childShape.operation, childShape.blendStrength);
-            localColour = combined.xyz;
-            localDst = combined.w;
+            Combined combined = Combine(localDst, childDst, localColour, childShape.colour, childShape.operation, childShape.blendStrength,localT_temporel,childShape.T_temporel,i,i+j+1);
+            localColour = combined.colour;
+            localDst = combined.dst;
+            localT_temporel = combined.T_temporel;
+            localIndex = combined.object;
         }
         i+=numChildren; // skip over children in outer loop
         
-        float4 globalCombined = Combine(globalDst, localDst, globalColour, localColour, shape.operation, shape.blendStrength);
-        globalColour = globalCombined.xyz;
-        globalDst = globalCombined.w;        
+        Combined globalCombined = Combine(globalDst, localDst, globalColour, localColour, shape.operation, shape.blendStrength,globalT_temporel,localT_temporel,globalIndex,localIndex);
+        globalColour = globalCombined.colour;
+        globalDst = globalCombined.dst;
+        globalT_temporel = globalCombined.T_temporel;
+        globalIndex = globalCombined.object;        
     }
 
-    return float4(globalColour, globalDst);
+    return CreateCombined(globalDst,globalColour,globalT_temporel,globalIndex);
 }
 
 float3 EstimateNormal(float3 p) {
-    float x = SceneInfo(float3(p.x+epsilon,p.y,p.z)).w - SceneInfo(float3(p.x-epsilon,p.y,p.z)).w;
-    float y = SceneInfo(float3(p.x,p.y+epsilon,p.z)).w - SceneInfo(float3(p.x,p.y-epsilon,p.z)).w;
-    float z = SceneInfo(float3(p.x,p.y,p.z+epsilon)).w - SceneInfo(float3(p.x,p.y,p.z-epsilon)).w;
+    float x = SceneInfo(float3(p.x+epsilon,p.y,p.z)).dst - SceneInfo(float3(p.x-epsilon,p.y,p.z)).dst;
+    float y = SceneInfo(float3(p.x,p.y+epsilon,p.z)).dst - SceneInfo(float3(p.x,p.y-epsilon,p.z)).dst;
+    float z = SceneInfo(float3(p.x,p.y,p.z+epsilon)).dst - SceneInfo(float3(p.x,p.y,p.z-epsilon)).dst;
     return normalize(float3(x,y,z));
 }
 
@@ -293,8 +330,8 @@ float CalculateShadow(Ray ray, float dstToShadePoint) {
 
     while (rayDst < dstToShadePoint) {
         marchSteps ++;
-        float4 sceneInfo = SceneInfo(ray.origin);
-        float dst = sceneInfo.w;
+        Combined sceneInfo = SceneInfo(ray.origin);
+        float dst = sceneInfo.dst;
         
         if (dst <= epsilon) {
             return shadowIntensity;
@@ -315,6 +352,7 @@ float _Accuracy = 3;
 float pi = 3.1415926;
 
 float distance_chaud(float3 position) {
+    // Renvoit la distance à la surface chaude
     
    // return SphereDistance(position, float3(10,0,0), 1);
 
@@ -325,7 +363,9 @@ float random(float2 x)
 {
     return frac(sin_p(dot(x,float2(12.9898,78.233)))*43758.5453123);
 }
+
 float solvewos(float3 p0, int walkSamples) {
+    // Resouds l'equation de Poisson pour un point p0, avec walkSamples marches 
     
     float epsilon = 0.005;
     float sum = 0;
@@ -336,22 +376,19 @@ float solvewos(float3 p0, int walkSamples) {
         
         int iterations = 0;
         
-        float couche_air = 0;
+        float couche_air = 0.1;
 
         while (distance_chaud(p) > epsilon && iterations < 100 && GetObjectDistance(0,p,true) < couche_air  ) {
             float internalRadius = abs(GetObjectDistance(0,p,true)-couche_air);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
             float phi = pi * random((walk*walk+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
-            p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));
-            
+            p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));            
             iterations++;
         }
 
-        if (distance_chaud(p) <= epsilon) {
-         
+        if (distance_chaud(p) <= epsilon) {         
             sum += 1;
-        }
-       
+        }       
         
     }
     return sum/walkSamples;
@@ -373,22 +410,26 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
     while (rayDst < maxDst) {
         marchSteps ++;
-        float4 sceneInfo = SceneInfo(ray.origin);
-        float dst = sceneInfo.w;
+        Combined sceneInfo = SceneInfo(ray.origin);
+        float dst = sceneInfo.dst;
         
         if (dst <= epsilon) {
             float3 pointOnSurface = ray.origin + ray.direction * dst;
             float3 normal = EstimateNormal(pointOnSurface - ray.direction * epsilon);
             float3 lightDir = (positionLight)?normalize(_Light-ray.origin):-_Light;
             float lighting = saturate(saturate(dot(normal,lightDir)));
-            float3 col = sceneInfo.xyz;
-
-            //Changer le 0 avec le bon coefficient (scene info ?)
-            float temps = shapes[0].T_temporel; // MEF C'est alpha*t pas simlpement t
-            float x_dim = shapes[0].size.x;
-            float y_dim = shapes[0].size.y;
-            float z_dim = shapes[0].size.z;
-            
+            float3 col = sceneInfo.colour;
+            float T_temp = sceneInfo.T_temporel; // MEF C'est alpha*t pas simlpement t
+            int index = sceneInfo.object;
+            float x_dim = maxDst;
+            float y_dim = maxDst;
+            float z_dim = maxDst;
+            if (index >= 0) {
+                float x_dim = shapes[index].size.x;
+                float y_dim = shapes[index].size.y;
+                float z_dim = shapes[index].size.z;
+            }
+                        
             int i_MAX = 0;
             int samples = 3;
             float pi = 3.1415926;
@@ -405,11 +446,11 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             float tempe = 0;
             
-            if (GetObjectDistance(0,pointOnSurface,false)<0.001) {
+            if (GetObjectDistance(0,pointOnSurface,false)<0.01) {
                 tempe = solvewos(pointOnSurface,10);
             }
             
-            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * (1-exp(- temps * pi * pi / 4 * ( 1/(x_dim*x_dim) + 1/(y_dim*y_dim) + 1/(z_dim*z_dim)))) * float4(1,0,0,0);
+            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * (1-exp(- T_temp * pi * pi / 4 * ( 1/(x_dim*x_dim) + 1/(y_dim*y_dim) + 1/(z_dim*z_dim)))) * float4(10,0,0,0);
 
             break;
         }
