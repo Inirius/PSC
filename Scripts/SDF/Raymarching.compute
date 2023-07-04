@@ -253,7 +253,7 @@ float GetShapeDistance(Shape shape, float3 eye, float3 parent, float3 rot) {
     return maxDst;
 }
 
-float GetObjectDistance(int i, float3 eye, bool util) {
+float2 GetObjectDistance(int i, float3 eye, bool util) {
     // eye : position du point
     // i : index de l'objet
     // util : considérer les objets cachés
@@ -262,6 +262,7 @@ float GetObjectDistance(int i, float3 eye, bool util) {
         int numChildren = shape.numChildren;
 
         float localDst = GetShapeDistance(shape,eye);
+        int localObject = i;
 
         for (int j = 0; j < numChildren; j ++) {
             Shape childShape = shapes[i+j+1];
@@ -270,11 +271,12 @@ float GetObjectDistance(int i, float3 eye, bool util) {
            if (ope == 4)  ope = (1-util) * ope;
            if (ope == 5) ope = 4 * util + (1-util) * 3;
         // modifier le combine pour qu'il renvoie l'indice du fils le plus proche
-            Combined combined = Combine(localDst, childDst, shape.colour, childShape.colour, ope, childShape.blendStrength,0,0,0,0);
+            Combined combined = Combine(localDst, childDst, shape.colour, childShape.colour, ope, childShape.blendStrength,0,0,localObject,i+j+1);
             localDst = combined.dst;
+            localObject = combined.object;
         }
         
-    return localDst;
+    return float2(localDst,float(localObject));
 }
 
 
@@ -352,7 +354,7 @@ float _Cold = 0;
 float _Accuracy = 3;
 float pi = 3.1415926;
 
-float distance_chaud(float3 position, int chaud) {
+float2 distance_chaud(float3 position, int chaud) {
     // Renvoit la distance à la surface chaude
     
    // return SphereDistance(position, float3(10,0,0), 1);
@@ -375,21 +377,23 @@ float solvewos(float3 p0, int walkSamples) {
 
     for (int walk = 0; walk < walkSamples; walk++) {
         float3 p = p0;
+        float2 distChaud = GetObjectDistance(chaud,p,true);
         
         int iterations = 0;
         
         float couche_air = 0.1;
 
-        while (distance_chaud(p,chaud) > epsilon && iterations < 100 && GetObjectDistance(0,p,true) < couche_air  ) {
-            float internalRadius = abs(GetObjectDistance(0,p,true)-couche_air);
+        while (distChaud.x > epsilon && iterations < 100 && GetObjectDistance(0,p,true).x < couche_air  ) {
+            float internalRadius = abs(GetObjectDistance(0,p,true).x-couche_air);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
-            float phi = pi * random((walk*walk+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
+            float phi = 2* pi * random((walk*walk+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));            
             iterations++;
+            distChaud = GetObjectDistance(chaud,p,true);
         }
 
-        if (distance_chaud(p,chaud) <= epsilon) {         
-            sum += 1;
+        if (distChaud.x <= epsilon) {         
+            sum += shapes[int(distChaud.y)].T_temporel;
         }       
         
     }
@@ -448,7 +452,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
             float tempe = 0;
             
-            if (GetObjectDistance(0,pointOnSurface,false)<0.01) {
+            if (GetObjectDistance(0,pointOnSurface,false).x<0.01) {
                 tempe = solvewos(pointOnSurface,10);
             }
             

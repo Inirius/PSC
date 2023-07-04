@@ -43,6 +43,7 @@ public class Master : MonoBehaviour {
         allShapes.Sort ((a, b) => a.operation.CompareTo (b.operation));
 
         List<Shape> orderedShapes = new List<Shape> ();
+        int c = 0; // indice du corps chaud
 
         for (int i = 0; i < allShapes.Count; i++) {
             // Add top-level shapes (those without a parent)
@@ -51,6 +52,10 @@ public class Master : MonoBehaviour {
                 Transform parentShape = allShapes[i].transform;
                 if (parentShape.name == "Barre") {
                     orderedShapes.Insert(0,allShapes[i]);
+                    c=1+parentShape.childCount;
+                }
+                else if (parentShape.name == "Corps chaud") {
+                    orderedShapes.Insert(c,allShapes[i]);
                 }
                 else {orderedShapes.Add (allShapes[i]);}
                 allShapes[i].numChildren = parentShape.childCount;
@@ -61,6 +66,11 @@ public class Master : MonoBehaviour {
                             orderedShapes.Insert(j+1,parentShape.GetChild (j).GetComponent<Shape> ());
                             orderedShapes[j+1].numChildren = 0;
                         }
+                        else if (parentShape.name == "Corps chaud") {
+                            orderedShapes.Insert(j+c+1,parentShape.GetChild (j).GetComponent<Shape> ());
+                            orderedShapes[j+c+1].numChildren = 0;
+                        }
+                        
                         else {
                             orderedShapes.Add (parentShape.GetChild (j).GetComponent<Shape> ());
                             orderedShapes[orderedShapes.Count - 1].numChildren = 0;
