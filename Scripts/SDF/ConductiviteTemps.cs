@@ -34,7 +34,17 @@ public class ConductiviteTemps : MonoBehaviour
             
         }
         else {
-            temps = 0.0f;
+            if (temps>0f) { 
+                temps -= Time.deltaTime;
+                GetComponent<Shape>().T_temporel = temps * GetComponent<Shape>().coef;
+                for (int i = 0; i < nbrchild-2; i++)
+                {
+                    transform.GetChild(i).GetComponent<Shape>().T_temporel = temps * transform.GetChild(i).GetComponent<Shape>().coef;
+                }
             }
+            else if (temps<0f) {
+                temps = 0.0f;
+            }
+        }
     }
 }
