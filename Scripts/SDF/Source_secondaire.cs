@@ -6,32 +6,46 @@ using static Shape;
 public class Source_secondaire : MonoBehaviour
 {
     Vector3 centre = new Vector3(10,0,0);
-    float rayon = 0.0f;
     float temps = 0.0f;
-    int count =0;
     public float dist = 0.0f;
-    //public Transform _target;
+    float t_h = 0.0f;
     GameObject chaud;
+    GameObject barre;
+    bool entree = false;
+    float tau = 8f;
     // Start is called before the first frame update
     void Start()
     {
         chaud = GameObject.Find("Corps chaud");
+        barre = GameObject.Find("Barre");
+        t_h = chaud.GetComponent<Shape>().T_temporel;
+        entree = (barre.GetComponent<ConductiviteTemps>().dist < 1f);
     }
 
     // Update is called once per frame
     void Update()
     {   
-        rayon = 1f;
-        dist = GetComponent<Shape>().GetShapeDistance(chaud.transform.position);
-
-        if(dist < rayon){
-            temps += Time.deltaTime;
-            GetComponent<Shape>().T_temporel = temps * GetComponent<Shape>().coef;
-            
+        dist = Vector3.Distance(chaud.transform.position, transform.position);
+        if (entree) {
+            tau = 4f;
         }
         else {
-            GetComponent<Shape>().T_temporel = 0;
-            temps = 0.0f;
+            tau = 8f;
+        }
+        if(dist >0){
+            
+            if (temps<tau) {
+                temps += Time.deltaTime;
+                GetComponent<Shape>().T_temporel = t_h * Mathf.Exp(-temps * GetComponent<Shape>().coef);
             }
+            else {
+                transform.position = chaud.transform.position;
+                temps = 0.0f;
+            }
+           
+            
+            
+        }
+        
     }
 }

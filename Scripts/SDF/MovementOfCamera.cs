@@ -31,7 +31,6 @@ public class MovementOfCamera : MonoBehaviour
 
     float pi = 3.1415926535F;
 
-    int count =0;
     bool isMoving = false;
 
     void Start()

@@ -8,7 +8,6 @@ public class ConductiviteTemps : MonoBehaviour
     Vector3 centre = new Vector3(10,0,0);
     float rayon = 0.0f;
     float temps = 0.0f;
-    int count =0;
     public float dist = 0.0f;
     int nbrchild;
     GameObject chaud;
@@ -17,12 +16,12 @@ public class ConductiviteTemps : MonoBehaviour
     {
         chaud = GameObject.Find("Corps chaud");
         nbrchild = transform.childCount;
+        rayon = 1f;
     }
 
     // Update is called once per frame
     void Update()
     {   
-        rayon = 1f;
         dist = GetComponent<Shape>().GetShapeDistance(chaud.transform.position);
 
         if(dist < rayon){
@@ -35,7 +34,6 @@ public class ConductiviteTemps : MonoBehaviour
             
         }
         else {
-            GetComponent<Shape>().T_temporel = 0;
             temps = 0.0f;
             }
     }
