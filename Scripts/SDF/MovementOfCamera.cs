@@ -40,7 +40,7 @@ public class MovementOfCamera : MonoBehaviour
 
     void Update()
     {
-        var epee = GameObject.Find("Four");
+        var epee = GameObject.Find("Barre");
         float mouseX = Input.GetAxis("Mouse X") * _mouseSensitivity;
         float mouseY = -Input.GetAxis("Mouse Y") * _mouseSensitivity;
 
