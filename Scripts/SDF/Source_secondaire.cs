@@ -5,7 +5,6 @@ using static Shape;
 
 public class Source_secondaire : MonoBehaviour
 {
-    Vector3 centre = new Vector3(10,0,0);
     float temps = 0.0f;
     public float dist = 0.0f;
     float t_h = 0.0f;

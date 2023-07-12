@@ -66,6 +66,40 @@ Combined CreateCombined(float dst, float3 colour, float T_temporel, int object) 
     return combined;
 }
 
+float4 HSVToRGB(float3 In)
+{
+    //float4 Out;
+    //float4 K = float4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    //float3 P = abs(frac(In.xxx + K.xyz) * 6.0 - K.www);
+    //Out = float4 (In.z * lerp(K.xxx, saturate(P - K.xxx), In.y),0);
+    //return Out;
+    float s = In.y/100;
+    float v = In.z/100;
+    float C = s*v;
+    float X = C*(1-abs(fmod(In.x/60.0, 2)-1));
+    float m = v-C;
+    float r,g,b;
+    if(In.x >= 0 && In.x < 60){
+        r = C,g = X,b = 0;
+    }
+    else if(In.x >= 60 && In.x < 120){
+        r = X,g = C,b = 0;
+    }
+    else if(In.x >= 120 && In.x < 180){
+        r = 0,g = C,b = X;
+    }
+    else if(In.x >= 180 && In.x < 240){
+        r = 0,g = X,b = C;
+    }
+    else if(In.x >= 240 && In.x < 300){
+        r = X,g = 0,b = C;
+    }
+    else{
+        r = C,g = 0,b = X;
+    }
+    return float4( (r+m)*255, (g+m)*255, (b+m)*255, 0);
+}
+
 float3 Tourne(float3 rot,float3 coor) {
     return float3(coor.x*(cos_p(rot.y)*cos_p(rot.z)-sin_p(rot.y)*cos_p(rot.x)*sin_p(rot.z))-coor.y*(cos_p(rot.y)*sin_p(rot.z)+sin_p(rot.y)*cos_p(rot.z)*cos_p(rot.x))+coor.z*sin_p(rot.y)*sin_p(rot.x),
     coor.x*(sin_p(rot.y)*cos_p(rot.z)+cos_p(rot.y)*cos_p(rot.x)*sin_p(rot.z))+coor.y*(-sin_p(rot.y)*sin_p(rot.z)+cos_p(rot.y)*cos_p(rot.z)*cos_p(rot.x))-coor.z*cos_p(rot.y)*sin_p(rot.x),
@@ -386,7 +420,7 @@ float solvewos(float3 p0, int walkSamples) {
         while (distChaud.x > epsilon && iterations < 100 && GetObjectDistance(0,p,true).x < couche_air  ) {
             float internalRadius = abs(GetObjectDistance(0,p,true).x-couche_air);
             float theta = 2 * pi * random((walk*walk+1)*float2(p.x*p.x+1,p.z*p.z+1));
-            float phi = 2* pi * random((walk*walk+1)*100000*float2(p.y*p.y+1,p.x*p.x+1));
+            float phi = 2* pi * random((walk*walk+1)*float2(p.y*p.y+1,p.x*p.x+1));
             p = float3(p.x + internalRadius * sin_p(theta) * cos_p(phi), p.y + internalRadius * sin_p(theta) * sin_p(phi), p.z + internalRadius * cos_p(theta));            
             iterations++;
             distChaud = GetObjectDistance(chaud,p,true);
@@ -435,6 +469,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 float y_dim = shapes[index].size.y;
                 float z_dim = shapes[index].size.z;
             }
+            if (T_temp<0){T_temp=0;}
                         
             int i_MAX = 0;
             int samples = 3;
@@ -456,7 +491,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
                 tempe = solvewos(pointOnSurface,10);
             }
             
-            Destination[id.xy] = float4(col * lighting * shadow,1) + (tempe) * (1-exp(- T_temp )) * float4(5,0,0,0);
+            float T_tot = (tempe) * (1-exp(- T_temp ));
+
+            Destination[id.xy] = float4(col * lighting * shadow,1) + float4(255*(1-exp(-10*T_tot)),255*T_tot*float3(2,1,0));
 
             break;
         }
