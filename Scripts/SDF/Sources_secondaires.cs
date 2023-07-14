@@ -26,7 +26,8 @@ public class Sources_secondaires : MonoBehaviour
     void Update()
     {   
         dist = chaud.GetComponent<Shape>().GetShapeDistance(transform.position);
-        
+        entree = (barre.GetComponent<ConductiviteTemps>().dist < 1f);
+
         if (entree) {
             if(dist > 0){
                 if (temps < - Mathf.Log(epsilon) / GetComponent<Shape>().coef) {
@@ -52,7 +53,13 @@ public class Sources_secondaires : MonoBehaviour
         else {
             // l'objet et la source sont en dehors de chaud
             temps += Time.deltaTime;
-            GetComponent<Shape>().T_temporel = GetComponent<Shape>().T_temporel * Mathf.Exp(-temps * GetComponent<Shape>().coef);
+            if (GetComponent<Shape>().T_temporel > epsilon) {
+                GetComponent<Shape>().T_temporel = GetComponent<Shape>().T_temporel * Mathf.Exp(-temps * GetComponent<Shape>().coef);
+        }
+            else {
+                GetComponent<Shape>().T_temporel = 0.0f;
+                GetComponent<Shape>().operation = Operation.Forget;
+            }
         }
 
         

@@ -17,6 +17,7 @@ public class ConductiviteTemps : MonoBehaviour
         chaud = GameObject.Find("Corps chaud");
         nbrchild = transform.childCount;
         rayon = 2f;
+        dist = GetComponent<Shape>().GetShapeDistance(chaud.transform.position);
     }
 
     // Update is called once per frame
