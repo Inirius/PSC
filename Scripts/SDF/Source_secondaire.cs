@@ -18,7 +18,7 @@ public class Source_secondaire : MonoBehaviour
         chaud = GameObject.Find("Corps chaud");
         barre = GameObject.Find("Barre");
         t_h = chaud.GetComponent<Shape>().T_temporel;
-        entree = (barre.GetComponent<ConductiviteTemps>().dist < 1f);
+        entree = false;
     }
 
     // Update is called once per frame
@@ -41,9 +41,7 @@ public class Source_secondaire : MonoBehaviour
                 transform.position = chaud.transform.position;
                 temps = 0.0f;
             }
-           
-            
-            
+                   
         }
         
     }

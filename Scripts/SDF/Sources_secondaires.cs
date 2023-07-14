@@ -19,7 +19,7 @@ public class Sources_secondaires : MonoBehaviour
         chaud = GameObject.Find("Corps chaud");
         barre = GameObject.Find("Barre");
         t_h = chaud.GetComponent<Shape>().T_temporel;
-        entree = (barre.GetComponent<ConductiviteTemps>().dist < 1f);
+        entree = false;
     }
 
     // Update is called once per frame
@@ -52,7 +52,7 @@ public class Sources_secondaires : MonoBehaviour
         else {
             // l'objet et la source sont en dehors de chaud
             temps += Time.deltaTime;
-            GetComponent<Shape>().T_temporel = t_h * Mathf.Exp(-temps * GetComponent<Shape>().coef);
+            GetComponent<Shape>().T_temporel = GetComponent<Shape>().T_temporel * Mathf.Exp(-temps * GetComponent<Shape>().coef);
         }
 
         
