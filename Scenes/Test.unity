@@ -1309,7 +1309,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b751b99fe7674499f882f8c7e4148ff4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  shapeType: 1
+  shapeType: 0
   operation: 4
   colour: {r: 0.9433962, g: 0.04883451, b: 0.031149892, a: 1}
   blendStrength: 0
