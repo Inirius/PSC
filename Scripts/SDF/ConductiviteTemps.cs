@@ -36,7 +36,7 @@ public class ConductiviteTemps : MonoBehaviour
         }
         else {
             if (temps>0f) { 
-                temps -= Time.deltaTime;
+                temps -=2* Time.deltaTime;
                 GetComponent<Shape>().T_temporel = temps * GetComponent<Shape>().coef;
                 for (int i = 0; i < nbrchild; i++)
                 {
