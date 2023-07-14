@@ -35,7 +35,9 @@ public class MovementOfCamera : MonoBehaviour
 
     void Start()
     {
-          
+          _currentRotation = transform.localEulerAngles;
+          _rotationX = _currentRotation.x;
+          _rotationY = _currentRotation.y;
     }
 
     void Update()
