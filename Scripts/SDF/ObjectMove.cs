@@ -8,7 +8,7 @@ public class ObjectMove : MonoBehaviour
     private Vector3 initialPosition;
     private float time;
     private const float AMPLITUDE = 4;
-    private const float FREQUENCY = 0.4f;
+    private const float FREQUENCY = 0.5f;
     
     // Start is called before the first frame update
     void Start()

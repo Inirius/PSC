@@ -404,7 +404,7 @@ float random(float2 x)
 float solvewos(float3 p0, int walkSamples) {
     // Resouds l'equation de Poisson pour un point p0, avec walkSamples marches 
     
-    float epsilon = 0.005;
+    float epsilon = 0.05;
     float sum = 0;
     float pi = 3.1415926; 
     int chaud = shapes[0].numChildren+1; 
@@ -488,7 +488,7 @@ void CSMain (uint3 id : SV_DispatchThreadID)
             float tempe = 0;
             
             if (GetObjectDistance(0,pointOnSurface,false).x<0.01) {
-                tempe = solvewos(pointOnSurface,10);
+                tempe = solvewos(pointOnSurface,8);
             }
             
             float T_tot = (tempe) * (1-exp(- T_temp ));
