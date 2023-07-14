@@ -227,13 +227,26 @@ Combined Combine(float dstA, float dstB, float3 colourA, float3 colourB, int ope
             k = b;
         }
     }
-    // Hide : nothing
+    // Hide : visualy hidden, but considered for the WOS
+
     // Show : Mask, but only visually
     else if (operation == 5) {
         // max(a,b)
         if (dstB > dst) {
             dst = dstB;
             }
+    }
+
+    // Forget : As is the object is not here
+
+    // Fusion : blending but only of the physical property
+
+    else if (operation == 7) {
+        Combined blend = Blend(dstA,dstB,colourA,colourB, blendStrength, T_temporelA, T_temporelB);
+        dst = (dstA>dstB)?dstB:dstA;
+        T_temporel = blend.T_temporel;
+        colour = blend.colour;
+        k = (blend.object==1)?b:a;
     }
 
     return CreateCombined(dst,colour,T_temporel,k);

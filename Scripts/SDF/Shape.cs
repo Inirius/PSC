@@ -6,7 +6,7 @@ public class Shape : MonoBehaviour
 {
 
     public enum ShapeType {Sphere,Cube,Torus,Prism,Cylinder,Cone};
-    public enum Operation {None, Blend, Cut, Mask, Hide, Show, Forget}
+    public enum Operation {None, Blend, Cut, Mask, Hide, Show, Forget, Fusion}
 
     public ShapeType shapeType;
     public Operation operation;
